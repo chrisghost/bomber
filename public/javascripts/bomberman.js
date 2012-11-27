@@ -25,7 +25,7 @@ $(function(){
         this.h = 30;    // height
 
         this.bind("NewDirection", function (e) {
-          _socket.sendData("NewDirection", {"x":e.x,"y":e.y});
+          _socket.sendData("dir", {"newDirection" : {"x":e.x,"y":e.y}});
         });
       }
   });

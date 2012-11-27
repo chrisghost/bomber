@@ -2,42 +2,39 @@ $ = jQuery.noConflict();
 
 var _socket = {
   init:function(){
-    socket = new WebSocket("ws://localhost:9000/ws/"+getMyName());
+    socket = new WebSocket("ws://localhost:9000/ws");
     socket.onopen = function(){
       console.log("Socket has been opened!");
     }
 
     socket.onmessage = function(msg){
-      _socket.handleMessage(msg);
+      console.log("------------------message received");
+      var d = JSON.parse(msg.data);
+      if(d.error) {
+        console.log("error, closing socket...");
+        socket.close();
+        humane.log("Socket error", { addnCls: 'humane-error' });
+      }
+      _socket.handleMessage(d);
     }
   },
   sendMessage : function(msg) {
-    console.log(JSON.stringify(
+    var data = JSON.stringify(
         {
-          "kind": "talk",
-          "user" : getMyName(),
-          "data" :{"text":msg}
+          "kind":"talk",
+          "text":msg
         }
-    ));
-    socket.send(JSON.stringify(
-        {
-          "kind": "talk",
-          "user" : getMyName(),
-          "data" :{"text":msg}
-        }
-    ))
+    );
+    console.log(data);
+    socket.send(data);
   },
   sendData : function(kind, data) {
-    socket.send(JSON.stringify(
-        {
-          "kind" : kind,
-          "user" : getMyName(),
-          "data" : data
-        }
-    ));
+    var _data = JSON.stringify({ 
+        "kind":kind, "c":JSON.stringify(data) });
+    console.log(_data);
+    socket.send(_data);
   },
-  handleMessage : function(msg) {
-    var d = JSON.parse(msg.data);
+  handleMessage : function(d) {
     console.log(d);
     if(d.kind=="youAre")
       setMyName(d.pid);
@@ -45,6 +42,8 @@ var _socket = {
       createPlayer(d.data);
     else if(d.kind=="talk")
       printMessage(d);
+    else if (d.kind=="join" && d.user != getMyName())
+      humane.log(d.user+" has joined");
   }
 };
 
