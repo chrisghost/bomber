@@ -9,7 +9,7 @@ import play.api.libs.concurrent._
 import scala.concurrent.ExecutionContext.Implicits._
 import scala.util.Random
 
-import server._
+import models.commander.Commander
 
 object Application extends Controller {
   val log = Logger(WebSocket.getClass())
@@ -19,10 +19,13 @@ object Application extends Controller {
   }
 
   def connect() = WebSocket.using[JsValue] { implicit request =>
-    val userId = request.session.get("pid").getOrElse(
-      "invite"+Random.nextInt()
-    )
+    val userId = request.queryString.get("userId") match {
+      case None     =>  Random.nextInt(10000).toString()
+      case Some(x)  =>  x.head
+    }
+
     val (out, channelClient) = Concurrent.broadcast[JsValue]
+    log.info("New connection "+userId)
     Commander.createPlayer(userId, channelClient)
 
     val in = Iteratee.foreach[JsValue]{ userCmd =>
