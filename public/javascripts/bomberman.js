@@ -22,7 +22,7 @@ $(function(){
     },
     drawNewPlayer: function(info){
       //console.log("2D, Canvas, Bomberman, "+info.style+"sprite"+(info.userId==getMyName() ? ", Human":""))
-      var new_player = Crafty.e("2D, Canvas, Bomberman, "+info.style+"sprite"+(info.userId==getMyName() ? ", Human":""))
+      var new_player = Crafty.e("2D, Canvas, Bomberman, "+info.style+"sprite"+(info.userId==getMyName() ? ", Human":", Distant"))
         .attr({x:200, y:200, userId:info.userId, xspeed:0, yspeed:0, move:info.move })
         .bind("newDirection"+info.userId,
           function(dir){
@@ -36,10 +36,7 @@ $(function(){
             this.x = pos.x;
             this.y = pos.y;
           }
-      ).bind("EnterFrame", function(){
-        this.x+=this.xspeed;
-        this.y+=this.yspeed;
-      }).bind("deletePlayer"+info.userId,
+      ).bind("deletePlayer"+info.userId,
           function() {
             this.destroy();
           }
@@ -56,6 +53,14 @@ $(function(){
         .fourway(1)
         .bind("NewDirection", function (e) {
           _socket.sendData({"userId": getMyName(),"x":e.x,"y":e.y, "position": {"x":this.x,"y":this.y} });
+        });
+      }
+  });
+  Crafty.c("Distant", {
+      init: function() {
+        this.bind("EnterFrame", function(){
+          this.x+=this.xspeed;
+          this.y+=this.yspeed;
         });
       }
   });
