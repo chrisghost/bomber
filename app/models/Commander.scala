@@ -5,14 +5,9 @@ import play.api.libs.concurrent._
 
 import play.api.libs.json._
 import play.api.libs.functional.syntax._
-import play.api.libs.json.util._
-import play.api.libs.json.Format._
-import play.api.libs.json.Reads._
-import play.api.libs.json.Writes._
 
 import models.game._
 import play.api.libs.concurrent.Execution.Implicits._
-//import scala.concurrent.Channel
 
 import play.api.libs.iteratee.Concurrent._
 
@@ -22,10 +17,17 @@ object Commander {
   val _game = system.actorOf(Props[Game], name = "game")
   var games = List(_game)
 
-  implicit val coordFormat = Json.format[Coord]
-  implicit val deletePlayerFormat  = Json.format[DeletePlayer]
-  implicit val newPlayerFormat = Json.format[NewPlayer]
+  implicit val coordFormat        = Json.format[Coord]
+  implicit val deletePlayerFormat = Json.format[DeletePlayer]
+  implicit val newPlayerFormat    = Json.format[NewPlayer]
   implicit val newDirectionFormat = Json.format[NewDirection]
+  implicit val elementFormat      = Json.format[Element]
+
+  implicit val boardWrites : Writes[Board] = new Writes[Board] {
+    def writes(board:Board) = {
+      Json.obj("elements" -> board.elements)
+    }
+  }
 
   def getGame (gameName : String) = {
     (games.filter(_.path.name.equals(gameName))) match {

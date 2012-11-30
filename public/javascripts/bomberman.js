@@ -1,5 +1,8 @@
 $(function(){
-  Crafty.init(300, 300);
+  var GAME_W = 330;
+  var GAME_H = 330;
+  var MULT_FACTOR = 30;
+  Crafty.init(GAME_W, GAME_H);
   Crafty.scene("loading", function () {
     Crafty.background("#000");
     Crafty.e("2D, DOM, Text").attr({ w: 100, h: 20, x: 150, y: 120 })
@@ -12,18 +15,27 @@ $(function(){
   Crafty.sprite(29.5, "assets/images/bomber-white-punk.png", { punksprite: [0, 0]});
   Crafty.sprite(29.5, "assets/images/bomber-white-miner.png", { minersprite: [0, 0]});
   Crafty.sprite(29.5, "assets/images/bomber-white-robot.png", { robotsprite: [0, 0]});
+  Crafty.sprite(30,   "assets/images/grass.png", { grasssprite: [0,0]})
 
   Crafty.c("World", {
     init: function() {
-     this.bind("player_in", function(info){
+      this.bind("player_in", function(info){
         this.drawNewPlayer(info);
+      }).bind("board", function(b){
+        for(i in b.elements) {
+          var elem = b.elements[i];
+          Crafty.e("2D, Canvas, "+(elem.kind == 1 ? "wall":"grass")+"sprite")
+          .attr({
+              x:elem.coord.x*MULT_FACTOR,
+              y:elem.coord.y*MULT_FACTOR
+          });
+        }
       });
       this.bombers = [];
     },
     drawNewPlayer: function(info){
-      //console.log("2D, Canvas, Bomberman, "+info.style+"sprite"+(info.userId==getMyName() ? ", Human":""))
       var new_player = Crafty.e("2D, Canvas, Bomberman, "+info.style+"sprite"+(info.userId==getMyName() ? ", Human":", Distant"))
-        .attr({x:200, y:200, userId:info.userId, xspeed:0, yspeed:0, move:info.move })
+        .attr({x:200, y:200, z:9999, userId:info.userId, xspeed:0, yspeed:0, move:info.move })
         .bind("newDirection"+info.userId,
           function(dir){
             this.xspeed = dir.x;

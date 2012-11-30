@@ -46,6 +46,9 @@ var _socket = {
     else if(d.kind=="deletePlayer") {
       Crafty.trigger("deletePlayer"+d.c.userId);
     }
+    else if(d.kind=="board") {
+      Crafty.trigger("board", d.c);
+    }
   }
 };
 
