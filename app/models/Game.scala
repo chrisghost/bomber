@@ -25,12 +25,16 @@ class Game extends Actor {
 
   def receive = {
     case ("broadcast", msg:Message) => broadcast(msg)
-    case m:NewDirection => broadcast(m)
+    case m:NewDirection => {
+      broadcast(m)
+      (members get m.userId).get.position=m.position
+    }
     case ("createPlayer", uId:String, channel:Channel[JsValue]) => createPlayer(uId, channel)
     case ("deletePlayer", userId:String) => {
       if(members contains userId) {
         context.stop((members get userId).get.actor)
         members -= userId
+        broadcast(DeletePlayer(userId))
       }
     }
   }
@@ -38,9 +42,10 @@ class Game extends Actor {
   def createPlayer(userId: String, out: Channel[JsValue]) = {
     val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
 
-    members = members + (userId -> PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor))
+    members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition)))
+
     broadcast(NewPlayer(userId, (members get userId).get.style))
-    broadcast(Position(userId, nextPlayerPosition))
+    broadcast(Position(userId, (members get userId).get.position))
     sendPlayersList(userId)
   }
 
@@ -51,7 +56,7 @@ class Game extends Actor {
   }
 
   def nextPlayerPosition = {
-    playerPositions(members.size-1)
+    playerPositions(members.size)
   }
 
   def broadcast(msg: Message) {
@@ -59,7 +64,7 @@ class Game extends Actor {
   }
 }
 
-case class PlayerInfos(userId:String, style:String, actor:ActorRef)
+class PlayerInfos(val userId:String, val style:String, val actor:ActorRef, var position:Coord)
 
 class Player(out: Channel[JsValue]) extends Actor {
   import models.commander.Commander._
@@ -91,15 +96,23 @@ class Player(out: Channel[JsValue]) extends Actor {
                 )
             )
           )
+        case dp : DeletePlayer =>
+          out.push(
+            Json.obj(
+              "kind"  -> "deletePlayer",
+              "c"     ->  Json.toJson(dp)
+            )
+          )
       }
     }
   }
 }
 
 abstract class Message
-case class NewDirection(userId:String, x:Int, y:Int) extends Message
+case class NewDirection(userId:String, x:Int, y:Int, position:Coord) extends Message
 case class NewPlayer(userId:String, style:String) extends Message
 case class Position(userId:String, pos:Coord) extends Message
+case class DeletePlayer(userId:String) extends Message
 
 case class Coord(x:Int, y:Int)
 

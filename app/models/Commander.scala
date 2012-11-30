@@ -29,7 +29,7 @@ object Commander {
   }
 
   def cmd(userId: String, userCom: JsValue) : Unit = {
-        println(userCom)
+    println(userCom)
     val c = userCom.validate(newDirectionFormat).asEither match {
       case Right(c) => cmd(userId,c)
       case Left(e) => userCom.validate(newPlayerFormat).asEither match {
@@ -42,9 +42,19 @@ object Commander {
   def cmd(userId: String, userCmd: Message) : Unit = {
     userCmd match {
       case _:NewDirection =>  _game ! ("broadcast" , userCmd)
-      case _:NewPlayer =>     _game ! ("broadcast" , userCmd)
+      case _:NewPlayer    =>  _game ! ("broadcast" , userCmd)
     }
   }
+
+  implicit val coordFormat  = (
+    (__ \ "x").format[Int] and
+    (__ \ "y").format[Int]
+  )(Coord.apply, unlift(Coord.unapply))
+
+  implicit val deletePlayerFormat  = Json.format[DeletePlayer]
+  //(
+    //(__ \ "userId").format[String]
+  //)(DeletePlayer.apply, unlift(DeletePlayer.unapply))
 
   implicit val newPlayerFormat  = (
     (__ \ "userId").format[String] and
@@ -54,11 +64,7 @@ object Commander {
   implicit val newDirectionFormat  = (
     (__ \ "userId").format[String] and
     (__ \ "x").format[Int] and
-    (__ \ "y").format[Int]
+    (__ \ "y").format[Int] and
+    (__ \ "position").format[Coord]
   )(NewDirection.apply, unlift(NewDirection.unapply))
-
-  implicit val coordFormat  = (
-    (__ \ "x").format[Int] and
-    (__ \ "y").format[Int]
-  )(Coord.apply, unlift(Coord.unapply))
 }

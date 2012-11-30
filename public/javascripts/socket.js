@@ -14,7 +14,7 @@ var _socket = {
 
     socket.onmessage = function(msg){
       var d = JSON.parse(msg.data);
-      console.log(d);
+      //console.log(d);
       if(d.error) {
         console.log("error, closing socket...", d.error);
         socket.close();
@@ -28,21 +28,22 @@ var _socket = {
       humane.error("Socket error ",err)
     }
   },
-  sendData : function(kind, data) {
+  sendData : function(data) {
     var _data = JSON.stringify(data);
     socket.send(_data);
   },
   handleMessage : function(d) {
-    console.log(d);
-    if(d.kind=="youAre")
-      setMyName(d.pid);
-    else if(d.kind=="newPlayer")
+    //console.log(d);
+    if(d.kind=="newPlayer")
       createPlayer(d.c);
     else if(d.kind=="newDirection") {
       Crafty.trigger("newDirection"+d.c.userId, d.c);
     }
     else if(d.kind=="position") {
       Crafty.trigger("position"+d.c.userId, d.c);
+    }
+    else if(d.kind=="deletePlayer") {
+      Crafty.trigger("deletePlayer"+d.c.userId);
     }
   }
 };
