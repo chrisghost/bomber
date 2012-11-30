@@ -16,6 +16,7 @@ $(function(){
   Crafty.sprite(29.5, "assets/images/bomber-white-miner.png", { minersprite: [0, 0]});
   Crafty.sprite(29.5, "assets/images/bomber-white-robot.png", { robotsprite: [0, 0]});
   Crafty.sprite(30,   "assets/images/grass.png", { grasssprite: [0,0]})
+  Crafty.sprite(30,   "assets/images/bois.png", { wallsprite: [0,0]})
 
   Crafty.c("World", {
     init: function() {
