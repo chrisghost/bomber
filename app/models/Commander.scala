@@ -46,25 +46,8 @@ object Commander {
     }
   }
 
-  implicit val coordFormat  = (
-    (__ \ "x").format[Int] and
-    (__ \ "y").format[Int]
-  )(Coord.apply, unlift(Coord.unapply))
-
+  implicit val coordFormat = Json.format[Coord]
   implicit val deletePlayerFormat  = Json.format[DeletePlayer]
-  //(
-    //(__ \ "userId").format[String]
-  //)(DeletePlayer.apply, unlift(DeletePlayer.unapply))
-
-  implicit val newPlayerFormat  = (
-    (__ \ "userId").format[String] and
-    (__ \ "style").format[String]
-  )(NewPlayer.apply, unlift(NewPlayer.unapply))
-
-  implicit val newDirectionFormat  = (
-    (__ \ "userId").format[String] and
-    (__ \ "x").format[Int] and
-    (__ \ "y").format[Int] and
-    (__ \ "position").format[Coord]
-  )(NewDirection.apply, unlift(NewDirection.unapply))
+  implicit val newPlayerFormat = Json.format[NewPlayer]
+  implicit val newDirectionFormat = Json.format[NewDirection]
 }
