@@ -1,4 +1,11 @@
-This is your new Play 2.0 application
+Bomber
 =====================================
 
-This file will be packaged with your application, when using `play dist`.
+Bomber is a bomberman clone (mostly inspired by the MegaDrive version).
+It uses
+* WebSockets
+* Akka Actors
+* Play2.1 Scala
+* Crafty.js
+
+
