@@ -28,8 +28,8 @@ var _socket = {
       humane.error("Socket error ",err)
     }
   },
-  sendData : function(data) {
-    var _data = JSON.stringify(data);
+  sendData : function(kind, data) {
+    var _data = JSON.stringify({"kind":kind,"data":data});
     socket.send(_data);
   },
   handleMessage : function(d) {

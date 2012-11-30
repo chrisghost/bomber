@@ -21,6 +21,11 @@ object Commander {
   val system = ActorSystem("BomberLand")
   val _game = system.actorOf(Props[Game], name = "game")
 
+  implicit val coordFormat = Json.format[Coord]
+  implicit val deletePlayerFormat  = Json.format[DeletePlayer]
+  implicit val newPlayerFormat = Json.format[NewPlayer]
+  implicit val newDirectionFormat = Json.format[NewDirection]
+
   def createPlayer(userId: String, out: Channel[JsValue]) = {
     _game ! ("createPlayer", userId, out)
   }
@@ -29,13 +34,12 @@ object Commander {
   }
 
   def cmd(userId: String, userCom: JsValue) : Unit = {
-    println(userCom)
-    val c = userCom.validate(newDirectionFormat).asEither match {
-      case Right(c) => cmd(userId,c)
-      case Left(e) => userCom.validate(newPlayerFormat).asEither match {
-          case Right(c) => cmd(userId,c)
-          case Left(e) => println("error "+e)
-      }
+    userCom \ "kind" match {
+      case JsString("newDirection") =>
+        (userCom \ "data").validate(newDirectionFormat).asEither match {
+          case Right(c) => cmd(userId, c)
+          case Left(e)  => println("error "+e)
+        }
     }
   }
 
@@ -46,8 +50,5 @@ object Commander {
     }
   }
 
-  implicit val coordFormat = Json.format[Coord]
-  implicit val deletePlayerFormat  = Json.format[DeletePlayer]
-  implicit val newPlayerFormat = Json.format[NewPlayer]
-  implicit val newDirectionFormat = Json.format[NewDirection]
 }
+

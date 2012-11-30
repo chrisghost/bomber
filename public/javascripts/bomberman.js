@@ -52,7 +52,7 @@ $(function(){
         this.addComponent("Fourway")
         .fourway(1)
         .bind("NewDirection", function (e) {
-          _socket.sendData({"userId": getMyName(),"x":e.x,"y":e.y, "position": {"x":this.x,"y":this.y} });
+          _socket.sendData("newDirection", {"userId": getMyName(),"x":e.x,"y":e.y, "position": {"x":this.x,"y":this.y} });
         });
       }
   });
