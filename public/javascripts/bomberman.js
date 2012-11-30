@@ -21,6 +21,7 @@ $(function(){
   Crafty.c("World", {
     init: function() {
       this.bind("player_in", function(info){
+        humane.log(info.userId+" has joined");
         this.drawNewPlayer(info);
       }).bind("board", function(b){
         for(i in b.elements) {
