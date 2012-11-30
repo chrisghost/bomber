@@ -60,7 +60,7 @@ object Commander {
   def cmd(userId: String, userCmd: Message, gameName : String) : Unit = {
     val game = getGame(gameName)
     userCmd match {
-      case _:NewDirection =>  game ! ("broadcast" , userCmd)
+      case _:NewDirection =>  game ! userCmd
       case _:NewPlayer    =>  game ! ("broadcast" , userCmd)
     }
   }

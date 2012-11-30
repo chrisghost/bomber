@@ -25,7 +25,6 @@ class Game extends Actor {
   private val playerPositions = List(Coord(0,0), Coord(270,0), Coord(0,270), Coord(270,270))
 
   def receive = {
-    case ("broadcast", msg:Message) => broadcast(msg)
     case m:NewDirection => {
       broadcast(m)
       (members get m.userId).get.position = m.position
@@ -72,7 +71,10 @@ class Game extends Actor {
 
   def sendPlayersList(receiver:String) = {
     members filterKeys (_!=receiver) foreach {
-      v => (members get receiver).get.actor ! NewPlayer(v._2.userId, v._2.style)
+      v => {
+        (members get receiver).get.actor ! NewPlayer(v._2.userId, v._2.style)
+        (members get receiver).get.actor ! Position(v._2.userId, v._2.position)
+      }
     }
   }
 
