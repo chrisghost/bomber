@@ -20,33 +20,46 @@ object Commander {
 
   val system = ActorSystem("BomberLand")
   val _game = system.actorOf(Props[Game], name = "game")
+  var games = List(_game)
 
   implicit val coordFormat = Json.format[Coord]
   implicit val deletePlayerFormat  = Json.format[DeletePlayer]
   implicit val newPlayerFormat = Json.format[NewPlayer]
   implicit val newDirectionFormat = Json.format[NewDirection]
 
-  def createPlayer(userId: String, out: Channel[JsValue]) = {
-    _game ! ("createPlayer", userId, out)
-  }
-  def killActor(userId:String) {
-    _game ! ("deletePlayer", userId)
+  def getGame (gameName : String) = {
+    (games.filter(_.path.name.equals(gameName))) match {
+       case head::tail => head
+       case Nil => {
+          val newGame = system.actorOf(Props[Game], name = gameName)
+          games = games :+ newGame
+          newGame
+       }
+    }
   }
 
-  def cmd(userId: String, userCom: JsValue) : Unit = {
+  def createPlayer(userId: String, out: Channel[JsValue], gameName: String) = {
+    getGame(gameName) ! ("createPlayer", userId, out)
+  }
+  def killActor(userId:String, gameName: String) {
+    getGame(gameName) ! ("deletePlayer", userId)
+  }
+
+  def cmd(userId: String, userCom: JsValue, gameName: String) : Unit = {
     userCom \ "kind" match {
       case JsString("newDirection") =>
         (userCom \ "data").validate(newDirectionFormat).asEither match {
-          case Right(c) => cmd(userId, c)
+          case Right(c) => cmd(userId, c, gameName)
           case Left(e)  => println("error "+e)
         }
     }
   }
 
-  def cmd(userId: String, userCmd: Message) : Unit = {
+  def cmd(userId: String, userCmd: Message, gameName : String) : Unit = {
+    val game = getGame(gameName)
     userCmd match {
-      case _:NewDirection =>  _game ! ("broadcast" , userCmd)
-      case _:NewPlayer    =>  _game ! ("broadcast" , userCmd)
+      case _:NewDirection =>  game ! ("broadcast" , userCmd)
+      case _:NewPlayer    =>  game ! ("broadcast" , userCmd)
     }
   }
 

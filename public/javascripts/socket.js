@@ -6,6 +6,7 @@ var _socket = {
     var WSurl = document.location.href.replace("http", "ws")+"ws";
 
     if(getMyName() != "") WSurl += "?userId="+getMyName();
+    if(getGameName() != "") WSurl += "&gameName="+getGameName();
 
     socket = new WebSocket(WSurl);
     socket.onopen = function(){
@@ -50,7 +51,9 @@ var _socket = {
 
 
 var players = {};
-var pname = "";
+var pname = "",
+    gname = "";
+
 function promptForName() {
   var name = prompt("Enter your name");
   setMyName(name);
@@ -64,7 +67,21 @@ function getMyName() {
   else return promptForName();
 }
 
+function promptForGame() {
+  var game = prompt("Enter game name");
+  setGameName(game);
+  return getGameName();
+}
+function setGameName(game){
+  gname = game;
+}
+function getGameName() {
+  if(gname != "") return gname;
+  else return promptForGame();
+}
+
 $(function(){
+  promptForGame();
   promptForName();
   _socket.init();
 })

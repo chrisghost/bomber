@@ -23,17 +23,18 @@ object Application extends Controller {
       case None     =>  Random.nextInt(10000).toString()
       case Some(x)  =>  x.head
     }
+    val gameName = request.queryString.get("gameName").map(name => name.head).getOrElse("game")
 
     val (out, channelClient) = Concurrent.broadcast[JsValue]
     log.info("New connection "+userId)
-    Commander.createPlayer(userId, channelClient)
+    Commander.createPlayer(userId, channelClient, gameName)
 
     val in = Iteratee.foreach[JsValue]{ userCmd =>
         log.info("Command from client "+userId+" : "+userCmd)
-        Commander.cmd(userId, userCmd)
+        Commander.cmd(userId, userCmd, gameName)
       }.mapDone { _ =>
         log.info(userId+" disconnected")
-        Commander.killActor(userId)
+        Commander.killActor(userId, gameName)
     }
 
     (in, out)
