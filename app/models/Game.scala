@@ -22,7 +22,7 @@ class Game extends Actor {
   import models.commander.Commander._
   private var members = Map.empty[String, PlayerInfos]
   private val bomberStyles = List("classic", "punk", "robot", "miner")
-  private val playerPositions = List(Coord(0,0), Coord(270,0), Coord(0,270), Coord(270,270))
+  private val playerPositions = List(Coord(30,30), Coord(270,30), Coord(30,270), Coord(270,270))
 
   def receive = {
     case m:NewDirection => {
