@@ -54,32 +54,6 @@ var players = {};
 var pname = "",
     gname = "";
 
-function promptForName() {
-  var name = prompt("Enter your name");
-  setMyName(name);
-  return getMyName();
-}
-function setMyName(name) {
-  pname=name;
-}
-function getMyName() {
-  if(pname != "") return pname;
-  else return promptForName();
-}
-
-function promptForGame() {
-  var game = prompt("Enter game name");
-  setGameName(game);
-  return getGameName();
-}
-function setGameName(game){
-  gname = game;
-}
-function getGameName() {
-  if(gname != "") return gname;
-  else return promptForGame();
-}
-
 $(function(){
   _socket.init();
 })
