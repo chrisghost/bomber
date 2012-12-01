@@ -14,4 +14,28 @@ $(function(){
       document.location="/bomber/"+_gname+"/"+_pname;
     }
   });
-})
+    updateGamesList();
+});
+
+function updateGamesList() {
+  $.ajax({
+    url:"/gamesList",
+    success: function(data) {
+      var glst = "<ul class='glst'>";
+      for (i in data) {
+        glst += "<li gid='"+data[i]+"'>"+data[i]+"</li>";
+      }
+      glst += "</ul>";
+      $("#gamesList").html(glst);
+      updateGlstItemsCallback();
+    },
+    error:  function() { humane.error("Failed to retrieve games list"); }
+  });
+}
+
+function updateGlstItemsCallback() {
+  $("ul.glst li").click(function(e){
+    $("#join-game input[name=gameName]").val($(this).attr("gid"));
+    $("#join-game").submit();
+  });
+}

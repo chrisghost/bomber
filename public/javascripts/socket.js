@@ -49,7 +49,6 @@ var _socket = {
   }
 };
 
-
 var players = {};
 var pname = "",
     gname = "";
