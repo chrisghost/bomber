@@ -4,7 +4,9 @@
 
 # Home page
 GET     /                           controllers.Application.index
-GET     /ws                         controllers.Application.connect
+GET     /bomber/:game/:player       controllers.Application.bomber(game:String, player:String)
+GET     /bomber/:game/:player/ws    controllers.Application.connect(game:String, player:String)
+GET     /gamesList                  controllers.Application.gamesList
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)

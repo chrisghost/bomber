@@ -3,10 +3,8 @@ humane.error = humane.spawn({ addnCls: 'humane-libnotify-error'});
 
 var _socket = {
   init:function(){
-    var WSurl = document.location.href.replace("http", "ws")+"ws";
-
-    if(getMyName() != "") WSurl += "?userId="+getMyName();
-    if(getGameName() != "") WSurl += "&gameName="+getGameName();
+    var pageUrl = document.location.toString();
+    var WSurl = pageUrl.replace("http://", "ws://")+"/ws";
 
     socket = new WebSocket(WSurl);
     socket.onopen = function(){
@@ -15,7 +13,6 @@ var _socket = {
 
     socket.onmessage = function(msg){
       var d = JSON.parse(msg.data);
-      //console.log(d);
       if(d.error) {
         console.log("error, closing socket...", d.error);
         socket.close();
@@ -84,7 +81,5 @@ function getGameName() {
 }
 
 $(function(){
-  promptForGame();
-  promptForName();
   _socket.init();
 })

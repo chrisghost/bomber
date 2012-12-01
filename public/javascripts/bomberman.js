@@ -11,13 +11,13 @@ $(function(){
   });
   Crafty.scene("loading");
 
-  Crafty.sprite(30, "assets/images/bomber-white-classic.png", { classicsprite: [0, 0]});
-  Crafty.sprite(30, "assets/images/bomber-white-punk.png", { punksprite: [0, 0]});
-  Crafty.sprite(30, "assets/images/bomber-miner.png", { minersprite: [0, 0]});
-  Crafty.sprite(30, "assets/images/bomber-white-robot.png", { robotsprite: [0, 0]});
+  Crafty.sprite(30, "/assets/images/bomber-white-classic.png", { classicsprite: [0, 0]});
+  Crafty.sprite(30, "/assets/images/bomber-white-punk.png", { punksprite: [0, 0]});
+  Crafty.sprite(30, "/assets/images/bomber-miner.png", { minersprite: [0, 0]});
+  Crafty.sprite(30, "/assets/images/bomber-white-robot.png", { robotsprite: [0, 0]});
 
-  Crafty.sprite(30,   "assets/images/grass.png", { grasssprite: [0,0]})
-  Crafty.sprite(30,   "assets/images/bois.png", { wallsprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/grass.png", { grasssprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/bois.png", { wallsprite: [0,0]})
 
   Crafty.c("World", {
     init: function() {
@@ -41,7 +41,7 @@ $(function(){
       this.bombers = [];
     },
     drawNewPlayer: function(info){
-      var new_player = Crafty.e("2D, Canvas, Bomberman, "+info.style+"sprite"+(info.userId==getMyName() ? ", Human, Collision":", Distant"))
+      var new_player = Crafty.e("2D, Canvas, Bomberman, "+info.style+"sprite"+(info.userId==pname ? ", Human, Collision":", Distant"))
         .attr({x:200, y:200, z:9999, userId:info.userId, xspeed:0, yspeed:0, move:info.move })
         .bind("newDirection"+info.userId,
           function(dir){
@@ -75,7 +75,7 @@ $(function(){
         this.addComponent("Fourway")
         .fourway(1)
         .bind("NewDirection", function (e) {
-          _socket.sendData("newDirection", {"userId": getMyName(),"x":e.x,"y":e.y, "position": {"x":this.x,"y":this.y} });
+          _socket.sendData("newDirection", {"userId": pname,"x":e.x,"y":e.y, "position": {"x":this.x,"y":this.y} });
         });
       }
   });
@@ -96,7 +96,7 @@ $(function(){
 })
 
 function createPlayer(info) {
-  if(info.userId==getMyName())
+  if(info.userId==pname)
     info.move={left:true,right:true,up:true,down:true}
   else
     info.move={left:false,right:false,up:false,down:false}

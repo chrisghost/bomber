@@ -29,6 +29,11 @@ object Commander {
     }
   }
 
+
+  def getGamesList : JsValue = {
+    Json.toJson(games.map{ x => x.path.name})
+  }
+
   def getGame (gameName : String) = {
     (games.filter(_.path.name.equals(gameName))) match {
        case head::tail => head

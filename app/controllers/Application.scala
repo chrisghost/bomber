@@ -18,12 +18,15 @@ object Application extends Controller {
     Ok(views.html.index("Your new application is ready."))
   }
 
-  def connect() = WebSocket.using[JsValue] { implicit request =>
-    val userId = request.queryString.get("userId") match {
-      case None     =>  Random.nextInt(10000).toString()
-      case Some(x)  =>  x.head
-    }
-    val gameName = request.queryString.get("gameName").map(name => name.head).getOrElse("game")
+  def bomber(game:String, player:String) = Action {
+    Ok(views.html.bomber(game, player))
+  }
+
+  def gamesList = Action {
+    Ok(Commander.getGamesList)
+  }
+
+  def connect(gameName:String, userId:String) = WebSocket.using[JsValue] { implicit request =>
 
     val (out, channelClient) = Concurrent.broadcast[JsValue]
     log.info("New connection "+userId)
