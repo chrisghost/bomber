@@ -1,5 +1,5 @@
 Bomber
-=====================================
+======
 
 Bomber is a bomberman clone (mostly inspired by the MegaDrive version).
 It uses
