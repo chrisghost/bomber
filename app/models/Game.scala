@@ -26,7 +26,7 @@ class Game extends Actor {
 
   def receive = {
     case m:NewDirection => {
-      broadcast(m)
+      broadcastBut(m.userId, m)
       (members get m.userId).get.position = m.position
     }
     case ("createPlayer", uId:String, channel:Channel[JsValue]) => createPlayer(uId, channel)
@@ -84,6 +84,10 @@ class Game extends Actor {
 
   def broadcast(msg: Message) {
     members.foreach(v => v._2.actor ! msg )
+  }
+
+  def broadcastBut(userId: String, msg: Message) {
+    members.filter(v => v._1 != userId).foreach(v => v._2.actor ! msg )
   }
 }
 
