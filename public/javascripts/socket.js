@@ -13,6 +13,7 @@ var _socket = {
 
     socket.onmessage = function(msg){
       var d = JSON.parse(msg.data);
+      console.log(d);
       if(d.error) {
         console.log("error, closing socket...", d.error);
         socket.close();

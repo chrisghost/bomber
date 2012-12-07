@@ -33,7 +33,7 @@ object Application extends Controller {
     Commander.createPlayer(userId, channelClient, gameName)
 
     val in = Iteratee.foreach[JsValue]{ userCmd =>
-        log.info("Command from client "+userId+" : "+userCmd)
+        //log.info("Command from client "+userId+" : "+userCmd)
         Commander.cmd(userId, userCmd, gameName)
       }.mapDone { _ =>
         log.info(userId+" disconnected")
