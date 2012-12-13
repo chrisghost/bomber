@@ -6743,11 +6743,11 @@ Crafty.c("Fourway", {
 			UP_ARROW: -90,
 			DOWN_ARROW: 90,
 			RIGHT_ARROW: 0,
-			LEFT_ARROW: 180
-			//W: -90,
-			//S: 90,
-			//D: 0,
-			//A: 180,
+			LEFT_ARROW: 180,
+			K: -90,
+			J: 90,
+			L: 0,
+			H: 180
 			//Z: -90,
 			//Q: 180
 		});
