@@ -22,6 +22,7 @@ object Commander {
   implicit val newPlayerFormat    = Json.format[NewPlayer]
   implicit val newDirectionFormat = Json.format[NewDirection]
   implicit val elementFormat      = Json.format[Element]
+  implicit val bombFormat         = Json.format[Bomb]
 
   implicit val boardWrites : Writes[Board] = new Writes[Board] {
     def writes(board:Board) = {
@@ -59,6 +60,11 @@ object Commander {
           case Right(c) => cmd(userId, c, gameName)
           case Left(e)  => println("error "+e)
         }
+      case JsString("bomb") =>
+        (userCom \ "data").validate(bombFormat).asEither match {
+          case Right(c) => cmd(userId, c, gameName)
+          case Left(e)  => println("error "+e)
+        }
     }
   }
 
@@ -67,6 +73,7 @@ object Commander {
     userCmd match {
       case _:NewDirection =>  game ! userCmd
       case _:NewPlayer    =>  game ! ("broadcast" , userCmd)
+      case _:Bomb         =>  game ! userCmd
     }
   }
 

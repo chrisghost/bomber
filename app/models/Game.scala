@@ -37,6 +37,7 @@ class Game extends Actor {
         broadcast(DeletePlayer(userId))
       }
     }
+    case bomb:Bomb => broadcast(bomb)
   }
 
   def createPlayer(userId: String, out: Channel[JsValue]) = {
@@ -137,6 +138,13 @@ class Player(out: Channel[JsValue]) extends Actor {
               "c"     ->  Json.toJson(bo)
             )
           )
+        case bomb : Bomb =>
+          out.push(
+            Json.obj(
+              "kind"  -> "bomb",
+              "c"     ->  Json.toJson(bomb)
+            )
+          )
       }
     }
   }
@@ -147,6 +155,7 @@ case class NewDirection(userId:String, x:Int, y:Int, position:Coord) extends Mes
 case class NewPlayer(userId:String, style:String) extends Message
 case class Position(userId:String, pos:Coord) extends Message
 case class DeletePlayer(userId:String) extends Message
+case class Bomb(userId:String, name:String, x:Int, y:Int, flameSize:Int, flameTime:Int) extends Message
 
 case class Coord(x:Int, y:Int)
 case class Element(coord:Coord, kind:Int)

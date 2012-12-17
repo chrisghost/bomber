@@ -47,19 +47,22 @@ $(function(){
               y:elem.coord.y*MULT_FACTOR
           });
         }
+      }).bind("death", function(d){
+        d.victim.die();
+        console.log("haha", d);
       });
       this.bombers = [];
       this.bombs = [];
     },
     drawNewPlayer: function(info){
-      var new_player = Crafty.e("2D, Canvas, Bomberman, Collision, "
-                                +info.style+"sprite, "
-                                +(info.userId==pname ? "Human":"Distant"))
+      var new_player = Crafty.e("Bomberman ,"+(info.userId==pname ? "Human":"Distant")+", 2D, Canvas, Collision, "
+                                +info.style+"sprite")
         .attr(
           {
             x:200,
             y:200,
             z:9999,
+            human:info.userId==pname ? true:false,
             userId:info.userId,
             xspeed:0,
             yspeed:0,
@@ -89,6 +92,10 @@ $(function(){
         else {
           this.justDropped = [];
         }
+        var flameHit = this.hit('Flame');
+        if(flameHit) {
+          Crafty.trigger("death", { victim:this, cause:flameHit[0].obj});
+        }
         if(changed)
           this.trigger('NewDirection', this._movement);
       }).bind("position"+info.userId,
@@ -101,10 +108,10 @@ $(function(){
             this.destroy();
           }
       ).bind("dropBomb"+info.userId,
-          function() {
-            this.dropBomb();
+          function(d) {
+            this.dropBomb(d);
           }
-      ).collision(new Crafty.polygon([2,5],[25,5],[25,30],[2,30]))
+      ).collision(new Crafty.polygon([5,5],[23,5],[23,30],[5,30]))
       ;
 
       this.bombers.push(new_player);
@@ -153,6 +160,8 @@ $(function(){
         setTimeout(function(){
           for(i in that.flames[flame.name])
             that.flames[flame.name][i].destroy();
+
+          Crafty.DrawManager.drawAll();
         }, flame.time);
       }
       this.flames[flame.name].push(flame);
@@ -160,18 +169,19 @@ $(function(){
   });
 
   Crafty.c("Bomberman", {
-      dropBomb: function(pos) {
-        console.log("dropBombn",pos);
+      dropBomb: function(d) {
+        if(typeof(d)=='undefined') d = null;
         var bPos = this.bombPos(this.getPos());
-        if(!this.world.isFree(bPos)) return;
-        console.log("putting da Bom'");
+        if(this.human) {
+          if(!this.world.isFree(bPos)) return;
 
-        if(this.justDropped.length > 1)this.justDropped.shift();
-        this.justDropped.push(this.nextBombName());
+          if(this.justDropped.length > 1)this.justDropped.shift();
+          this.justDropped.push(this.nextBombName());
+        }
         var bomb = Crafty.e("Bomb, 2D, Canvas, SpriteAnimation, bombsprite, Collision")
         .attr(bPos)
         .attr({
-            name:this.justDropped[this.justDropped.length-1],
+            name: (d) ? d.name : this.justDropped[this.justDropped.length-1],
             time:3000,
             flameTime:1000,
             flameSize:3
@@ -179,6 +189,15 @@ $(function(){
         .animate('BombScaling', 0, 0, 6)
         .animate('BombScaling', 100, -1);
         this.world.putBomb(bomb);
+        if(this.human)
+          _socket.sendData("bomb", {
+            "userId": this.userId,
+            "name":bomb.name,
+            "x":bomb.x,
+            "y":bomb.y,
+            "flameSize":bomb.flameSize,
+            "flameTime":bomb.flameTime
+          });
       },
       nextBombName : function() {
         if(typeof this.bombNum == 'undefined') this.bombNum = 0;
@@ -196,6 +215,9 @@ $(function(){
           x:this.x+(this.w/2),
           y:this.y+(this.h/2)
         };
+      },
+      die: function() {
+        this.destroy();
       }
   });
   Crafty.c("Bomb", {
@@ -218,7 +240,8 @@ $(function(){
         this.burned = true;
         console.log(this.explosionClock);
         Crafty.trigger("destroy-bomb", {
-            pos: {x:this.x,y:this.y},
+            x:this.x,
+            y:this.y,
             time: this.flameTime,
             life:this.flameSize,
             name:this.name
@@ -229,26 +252,19 @@ $(function(){
   Crafty.c("Flame", {
       init: function() {
         var that = this;
-        setTimeout(function(){ that.timer()}, 0);
+        setTimeout(function(){ that.timer()}, 10);
       },
       timer : function() {
-        if(this.first) {
-          setTimeout("Crafty.DrawManager.drawAll()", this.time+100);
-          this.first = false;
-        }
         if(this.life>0) this.grow();
         this.world.registerFlame(this);
-        //this.timeout(function () {
-          //console.log("destroy()");
-          //this.destroy();
-        //}, this.time);
+        var hitBomber = this.hit("Bomberman");
+        if(hitBomber) hitBomber[0].obj.die();
       },
       grow: function(){
         for(i=0;i<this.growTo.length;i++) {
           var gTo = this.growTo[i];
-          console.log(gTo);
             if(!this.world.blocks('flame', {x:this.x+gTo.x*MULT_FACTOR,y: this.y+gTo.y*MULT_FACTOR}))
-              Crafty.e("2D, Canvas, Flame, "+((this.life==1)?"flameleafsprite":"flamesprite"))
+              Crafty.e("Flame, 2D, Canvas, "+((this.life==1)?"flameleafsprite":"flamesprite")+", Collision")
               .attr({
                   x:this.x+gTo.x*MULT_FACTOR,
                   y:this.y+gTo.y*MULT_FACTOR,
@@ -258,7 +274,10 @@ $(function(){
                   growTo:[gTo],
                   life:this.life-1,
                   rotation:((gTo.x!=0)?90:0)+((this.life==1)?((gTo.y==1||gTo.x==-1)?180:0):0)
-              }).origin("center");
+              })
+              .origin("center")
+              .collision(new Crafty.polygon([5,5],[25,5],[25,25],[5,25]))
+              ;
         }
       }
   });
@@ -266,7 +285,7 @@ $(function(){
   Crafty.c("Human", {
       init: function(userId) {
         this.addComponent("Fourway")
-        .fourway(1)
+        .fourway(3)
         .bind("NewDirection", function (e) {
           _socket.sendData("newDirection", {"userId": pname,"x":e.x,"y":e.y, "position": {"x":this.x,"y":this.y} });
         });
@@ -290,12 +309,11 @@ $(function(){
   Crafty.scene("main", function () {
     var world = Crafty.e("World")
     .bind("destroy-bomb", function(data){
-      delete this.bombs[this.hashBombPos(data.pos)];
-      Crafty.e("2D, Canvas, Flame, flame4sprite")
+      delete this.bombs[this.hashBombPos({x:data.x,y:data.y})];
+      Crafty.e("Flame, 2D, Canvas, flame4sprite, Collision")
       .attr({
-          x:data.pos.x,
-          y:data.pos.y,
-          first:true,
+          x:data.x,
+          y:data.y,
           time:data.time,
           name:data.name,
           world:this,
