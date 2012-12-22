@@ -13,9 +13,9 @@ $(function(){
         .attr(bPos)
         .attr({
             name: (d) ? d.name : this.justDropped[this.justDropped.length-1],
-            time:3000,
-            flameTime:1000,
-            flameSize:3
+            time:this.bombTime,
+            flameTime:this.flameTime,
+            flameSize:this.flameSize
         })
         .animate('BombScaling', 0, 0, 6)
         .animate('BombScaling', 100, -1);
@@ -65,6 +65,7 @@ $(function(){
         for(i in Config.KEYS.right) dirControl[Config.KEYS.right[i]] = 0;
 
         this.multiway(Config.HUMAN_SPEED, dirControl);
+
         this.bind("NewDirection", function (e) {
           _socket.sendData("newDirection",
             { "userId": pname, "x":e.x, "y":e.y, "position": {"x":this.x,"y":this.y} }
@@ -74,6 +75,10 @@ $(function(){
           if(Config.KEYS.dropBomb.indexOf(e.key) != -1)
             Crafty.trigger("dropBomb"+this.userId);
         });
+
+        this.bombTime = Config.DEFAULT_VALUES.bombTime;
+        this.flameTime = Config.DEFAULT_VALUES.flameTime;
+        this.flameSize = Config.DEFAULT_VALUES.flameSize;
       }
   });
   Crafty.c("Distant", {

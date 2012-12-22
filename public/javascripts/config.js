@@ -11,5 +11,10 @@ var Config = {
     "left" : [Crafty.keys['LEFT_ARROW'], Crafty.keys['H']],
     "right" : [Crafty.keys['RIGHT_ARROW'], Crafty.keys['L']],
     "dropBomb" : [Crafty.keys['SPACE'],  Crafty.keys['S']]
+  },
+  "DEFAULT_VALUES" : {
+    "bombTime" : 2000,
+    "flameTime" : 1000,
+    "flameSize" : 1
   }
 }
