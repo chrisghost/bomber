@@ -37,8 +37,8 @@ $(function(){
       },
       bombPos : function(pos) {
         return {
-          x:(pos.x-(pos.x%MULT_FACTOR)),
-          y:(pos.y-(pos.y%MULT_FACTOR))
+          x:(pos.x-(pos.x%Config.BLOCK_SIZE)),
+          y:(pos.y-(pos.y%Config.BLOCK_SIZE))
         };
       },
       getPos : function(){
@@ -49,21 +49,30 @@ $(function(){
       },
       die: function() {
         this.destroy();
+      },
+      burned: function(flame) {
+        Crafty.trigger("death", { victim:this, cause:flame});
       }
   });
 
   Crafty.c("Human", {
       init: function(userId) {
-        this.addComponent("Fourway")
-        .fourway(3)
-        .bind("NewDirection", function (e) {
-          _socket.sendData("newDirection", {"userId": pname,"x":e.x,"y":e.y, "position": {"x":this.x,"y":this.y} });
+        this.addComponent("Multiway");
+        var dirControl = {};
+        for(i in Config.KEYS.up)    dirControl[Config.KEYS.up[i]] = -90;
+        for(i in Config.KEYS.down)  dirControl[Config.KEYS.down[i]] = 90;
+        for(i in Config.KEYS.left)  dirControl[Config.KEYS.left[i]] = 180;
+        for(i in Config.KEYS.right) dirControl[Config.KEYS.right[i]] = 0;
+
+        this.multiway(Config.HUMAN_SPEED, dirControl);
+        this.bind("NewDirection", function (e) {
+          _socket.sendData("newDirection",
+            { "userId": pname, "x":e.x, "y":e.y, "position": {"x":this.x,"y":this.y} }
+          );
         });
         this.bind('KeyDown', function(e) {
-          if(e.key == Crafty.keys['SPACE'] || e.key == Crafty.keys['S']){
+          if(Config.KEYS.dropBomb.indexOf(e.key) != -1)
             Crafty.trigger("dropBomb"+this.userId);
-            console.log("dropBomb"+this.userId);
-          }
         });
       }
   });

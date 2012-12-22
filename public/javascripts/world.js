@@ -1,11 +1,9 @@
 $(function(){
   var Bomber = null;
-  var GAME_W = 330;
-  var GAME_H = 330;
-  var MULT_FACTOR = 30;
-  var WALL = 1;
-  var GROUND = 0;
-  Crafty.init(GAME_W, GAME_H);
+  Crafty.init(Config.GAME_W, Config.GAME_H);
+
+  //TODO AN ACTUAL LOADING SCENE
+  //TODO LOAD THE SPRITES DURING LOADING SCENE
   Crafty.scene("loading", function () {
     Crafty.background("#000");
     Crafty.e("2D, DOM, Text").attr({ w: 100, h: 20, x: 150, y: 120 })
@@ -14,6 +12,7 @@ $(function(){
   });
   Crafty.scene("loading");
 
+  //TODO GROUP THE SPRITES
   Crafty.sprite(30, "/assets/images/bomber-white-classic.png", { classicsprite: [0, 0]});
   Crafty.sprite(30, "/assets/images/bomber-white-punk.png", { punksprite: [0, 0]});
   Crafty.sprite(30, "/assets/images/bomber-miner.png", { minersprite: [0, 0]});
@@ -29,34 +28,48 @@ $(function(){
       this.bind("player_in", function(info){
         humane.log(info.userId+" has joined");
         this.drawNewPlayer(info);
-        this.flames = [];
       }).bind("board", function(b){
         this.board=[];
-        console.log(this.board);
         for(i in b.elements) {
-          var elem = b.elements[i];
-          if(typeof this.board[elem.coord.x] == 'undefined') this.board[elem.coord.x] = [];
-          this.board[elem.coord.x][elem.coord.y] = elem.kind;
-          if(elem.kind == 1)
-            var genStr = "wall, 2D, Canvas, wallsprite, Collision";
-          else
-            var genStr = "ground, 2D, Canvas, grasssprite, Collision";
-          Crafty.e(genStr)
-          .attr({
-              x:elem.coord.x*MULT_FACTOR,
-              y:elem.coord.y*MULT_FACTOR
-          });
+          this.drawNewBoardElem(b.elements[i]);
         }
       }).bind("death", function(d){
         d.victim.die();
         console.log("haha", d);
       });
+      this.flames = [];
       this.bombers = [];
       this.bombs = [];
     },
+    pxToGrid : function(pos){
+      return {
+          x:Math.floor(pos.x/Config.BLOCK_SIZE),
+          y:Math.floor(pos.y/Config.BLOCK_SIZE)
+        }
+    },
+    gridToPx : function(pos){
+      return {
+          x:pos.x*Config.BLOCK_SIZE,
+          y:pos.y*Config.BLOCK_SIZE
+        }
+    },
+    drawNewBoardElem: function(elem) {
+      if(typeof this.board[elem.coord.x] == 'undefined') this.board[elem.coord.x] = [];
+      this.board[elem.coord.x][elem.coord.y] = elem.kind;
+
+      if(elem.kind == Config.WALL)
+        var genStr = "wall, 2D, Canvas, wallsprite, Collision";
+      else if(elem.kind == Config.GROUND)
+        var genStr = "ground, 2D, Canvas, grasssprite, Collision";
+
+      Crafty.e(genStr)
+      .attr(this.gridToPx(elem.coord));
+    },
     drawNewPlayer: function(info){
-      var new_player = Crafty.e("Bomberman ,"+(info.userId==pname ? "Human":"Distant")+", 2D, Canvas, Collision, "
-                                +info.style+"sprite")
+      var new_player =
+        Crafty.e("Bomberman ,"+(info.userId==pname ? "Human":"Distant")
+            +", 2D, Canvas, Collision, "
+            +info.style+"sprite")
         .attr(
           {
             x:200,
@@ -94,7 +107,7 @@ $(function(){
         }
         var flameHit = this.hit('Flame');
         if(flameHit) {
-          Crafty.trigger("death", { victim:this, cause:flameHit[0].obj});
+          this.burned(flameHit[0].obj);
         }
         if(changed)
           this.trigger('NewDirection', this._movement);
@@ -123,18 +136,15 @@ $(function(){
       this.bombs[this.hashBombPos({x:bomb.x,y:bomb.y})] = bomb;
     },
     isFree: function(pos) {
-      //console.log(this.board[0], pos);
-      return !(this.hashBombPos(pos) in this.bombs) && !(this.elemAt(pos) == WALL);
+      return !(this.hashBombPos(pos) in this.bombs)
+        && !(this.elemAt(pos) == Config.WALL);
     },
     elemAt: function(pos){
-      //console.log(Math.floor(pos.x/MULT_FACTOR));
-      var x = Math.floor(pos.x/MULT_FACTOR);
-      var y = Math.floor(pos.y/MULT_FACTOR);
-      if(x<0 || y<0) return null;
-      return this.board[x][y];
+      var gPos = this.pxToGrid(pos);
+      if(gPos.x<0 || gPos.y<0) return null;
+      return this.board[gPos.x][gPos.y];
     },
     burns: function(pos) {
-      //console.log(pos);
       if(this.hashBombPos(pos) in this.bombs) {
         this.bombs[this.hashBombPos(pos)].explode();
         return true;
@@ -142,7 +152,6 @@ $(function(){
       return false;
     },
     blocks: function(what, pos) {
-      //console.log(what, pos, this.isFree(pos));
       switch(what){
         case 'flame':
           if(this.burns(pos)) return true;

@@ -42,11 +42,13 @@ $(function(){
       grow: function(){
         for(i=0;i<this.growTo.length;i++) {
           var gTo = this.growTo[i];
-            if(!this.world.blocks('flame', {x:this.x+gTo.x*MULT_FACTOR,y: this.y+gTo.y*MULT_FACTOR}))
+            if(!this.world.blocks('flame', {
+                 x:this.x+gTo.x*Config.BLOCK_SIZE,
+                 y: this.y+gTo.y*Config.BLOCK_SIZE})) {
               Crafty.e("Flame, 2D, Canvas, "+((this.life==1)?"flameleafsprite":"flamesprite")+", Collision")
               .attr({
-                  x:this.x+gTo.x*MULT_FACTOR,
-                  y:this.y+gTo.y*MULT_FACTOR,
+                  x:this.x+gTo.x*Config.BLOCK_SIZE,
+                  y:this.y+gTo.y*Config.BLOCK_SIZE,
                   name:this.name,
                   time:this.time,
                   world:this.world,
@@ -57,6 +59,7 @@ $(function(){
               .origin("center")
               .collision(new Crafty.polygon([5,5],[25,5],[25,25],[5,25]))
               ;
+           }
         }
       }
   });
