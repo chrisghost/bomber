@@ -57,13 +57,18 @@ class Game extends Actor {
 
     (for (a <- xr; b <- yr) yield(a,b)).map {
       v => v match {
-        case (0,y)            => Element(Coord(0,y), boardElem.WALL)
-        case (x,0)            => Element(Coord(x,0), boardElem.WALL)
-        case (x,y) if(y==h-1) => Element(Coord(x,y), boardElem.WALL)
-        case (x,y) if(x==w-1) => Element(Coord(x,y), boardElem.WALL)
+        case (0,y)            => Element(Coord(0,y), boardElem.WALL) // LEFT WALL
+        case (x,0)            => Element(Coord(x,0), boardElem.WALL) // TOP WALL
+        case (x,y) if(y==h-1) => Element(Coord(x,y), boardElem.WALL) // BOTTOM WALL
+        case (x,y) if(x==w-1) => Element(Coord(x,y), boardElem.WALL) // RIGHT WALL
         case (x,y) => (x,y) match {
           case (x,y) if(x%2==0 && y%2==0)
               => Element(Coord(x,y), boardElem.WALL)
+          case (x,y) if(!((x == 1 || x == 2) && (y == 1 || y == 2)) &&      // TOP-LEFT PLAYER SPAWN ZONE
+                        !((x == w-2 || x == w-3) && (y == 1 || y == 2)) &&  // TOP-RIGHT PLAYER SPAWN ZONE
+                        !((x == 1 || x == 2) && (y == h-2 || y == h-3)) &&  // BOTTOM-LEFT PLAYER SPAWN ZONE
+                        !((x == w-2 || x == w-3) && (y == h-2 || y == h-3)) // BOTTOM-RIGHT PLAYER SPAWN ZONE
+                        ) => Element(Coord(x,y), boardElem.CRATE)
           case _ => Element(Coord(x,y), boardElem.GROUND)
         }
       }
@@ -164,4 +169,5 @@ case class Board(elements:List[Element]) extends Message
 object boardElem {
   val GROUND  = 0
   val WALL    = 1
+  val CRATE   = 2
 }

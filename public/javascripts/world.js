@@ -19,6 +19,7 @@ $(function(){
   Crafty.sprite(30, "/assets/images/bomber-white-robot.png", { robotsprite: [0, 0]});
 
   Crafty.sprite(30, "/assets/images/grass.png", { grasssprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/crate.png", { cratesprite: [0,0]})
   Crafty.sprite(30, "/assets/images/bois.png", { wallsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/bomb.png", { bombsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/flame.png", { flamesprite: [0,0], flame4sprite: [0,1], flameleafsprite: [0,2]})
@@ -55,15 +56,19 @@ $(function(){
     },
     drawNewBoardElem: function(elem) {
       if(typeof this.board[elem.coord.x] == 'undefined') this.board[elem.coord.x] = [];
-      this.board[elem.coord.x][elem.coord.y] = elem.kind;
 
       if(elem.kind == Config.WALL)
         var genStr = "wall, 2D, Canvas, wallsprite, Collision";
       else if(elem.kind == Config.GROUND)
         var genStr = "ground, 2D, Canvas, grasssprite, Collision";
+      else if(elem.kind == Config.CRATE)
+        var genStr = "crate, 2D, Canvas, cratesprite, Collision";
 
-      Crafty.e(genStr)
-      .attr(this.gridToPx(elem.coord));
+      var cElem = Crafty.e(genStr)
+      .attr(this.gridToPx(elem.coord))
+      .attr({kind:elem.kind});
+
+      this.board[elem.coord.x][elem.coord.y] = cElem;
     },
     drawNewPlayer: function(info){
       var new_player =
@@ -91,7 +96,7 @@ $(function(){
           }
       ).bind('Moved', function(from) {
         var changed=false;
-        if (this.hit('wall')) {
+        if (this.hit('wall') || this.hit('crate')) {
           this.attr({x: from.x, y:from.y});
           changed=true;
         }
@@ -137,7 +142,7 @@ $(function(){
     },
     isFree: function(pos) {
       return !(this.hashBombPos(pos) in this.bombs)
-        && !(this.elemAt(pos) == Config.WALL);
+        && !(this.elemAt(pos).kind == Config.WALL);
     },
     elemAt: function(pos){
       var gPos = this.pxToGrid(pos);
@@ -147,6 +152,15 @@ $(function(){
     burns: function(pos) {
       if(this.hashBombPos(pos) in this.bombs) {
         this.bombs[this.hashBombPos(pos)].explode();
+        return true;
+      }
+      var gPos = this.pxToGrid(pos);
+      if(this.board[gPos.x][gPos.y].kind == Config.CRATE) {
+        this.board[gPos.x][gPos.y].destroy();
+        this.drawNewBoardElem({
+          "coord" : gPos,
+          "kind" : Config.GROUND
+        });
         return true;
       }
       return false;
