@@ -19,8 +19,8 @@ $(function(){
   Crafty.sprite(30, "/assets/images/bomber-white-robot.png", { robotsprite: [0, 0]});
 
   Crafty.sprite(30, "/assets/images/grass.png", { grasssprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/crate.png", { cratesprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/bois.png", { wallsprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/bois.png", { cratesprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/blue.png", { wallsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/bomb.png", { bombsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/flame.png", { flamesprite: [0,0], flame4sprite: [0,1], flameleafsprite: [0,2]})
 
