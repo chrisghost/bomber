@@ -6,18 +6,14 @@ $(function(){
         setTimeout(function(){ that.timer()}, 0);
       },
       timer : function() {
-        //console.log(this.time);
         this.explosionClock = this.timeout(function () {
-          console.log(this.burned);
           if(!this.burned)
           this.explode();
         }, this.time);
       },
       explode: function() {
-        console.log('BOOM', this.explosionClock);
         clearTimeout(this.explosionClock);
         this.burned = true;
-        console.log(this.explosionClock);
         Crafty.trigger("destroy-bomb", {
             x:this.x,
             y:this.y,

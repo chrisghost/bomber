@@ -52,12 +52,19 @@ $(function(){
       },
       burned: function(flame) {
         Crafty.trigger("death", { victim:this, cause:flame});
+      },
+      bonus : function(kind) {
+        switch (kind) {
+          case Config.B_BOMB : this.incrementBombsNumber(); break;
+          case Config.B_SPEED : this.incrementSpeed(); break;
+        }
       }
   });
 
   Crafty.c("Human", {
       init: function(userId) {
         this.addComponent("Multiway");
+
         var dirControl = {};
         for(i in Config.KEYS.up)    dirControl[Config.KEYS.up[i]] = -90;
         for(i in Config.KEYS.down)  dirControl[Config.KEYS.down[i]] = 90;
@@ -79,7 +86,14 @@ $(function(){
         this.bombTime = Config.DEFAULT_VALUES.bombTime;
         this.flameTime = Config.DEFAULT_VALUES.flameTime;
         this.flameSize = Config.DEFAULT_VALUES.flameSize;
+      },
+      incrementBombsNumber : function() {
+        this.maxBombs += 1;
+      },
+      incrementSpeed : function() {
+        this.speed(20);
       }
+
   });
   Crafty.c("Distant", {
       init: function() {

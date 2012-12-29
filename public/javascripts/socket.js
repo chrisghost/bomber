@@ -29,6 +29,7 @@ var _socket = {
   },
   sendData : function(kind, data) {
     var _data = JSON.stringify({"kind":kind,"data":data});
+    //console.log(_data);
     socket.send(_data);
   },
   handleMessage : function(d) {

@@ -6,6 +6,10 @@ var Config = {
   "GROUND" : 0,
   "WALL" : 1,
   "CRATE" : 2,
+  "C_BOMB" : 21,
+  "C_SPEED" : 22,
+  "B_BOMB" : 31,
+  "B_SPEED" : 32,
   "KEYS" : {
     "up" : [ Crafty.keys['UP_ARROW'], Crafty.keys['K']],
     "down" : [Crafty.keys['DOWN_ARROW'], Crafty.keys['J']],

@@ -68,12 +68,18 @@ class Game extends Actor {
                         !((x == w-2 || x == w-3) && (y == 1 || y == 2)) &&  // TOP-RIGHT PLAYER SPAWN ZONE
                         !((x == 1 || x == 2) && (y == h-2 || y == h-3)) &&  // BOTTOM-LEFT PLAYER SPAWN ZONE
                         !((x == w-2 || x == w-3) && (y == h-2 || y == h-3)) // BOTTOM-RIGHT PLAYER SPAWN ZONE
-                        ) => Element(Coord(x,y), boardElem.CRATE)
+                        ) => Element(Coord(x,y), genCrate)
           case _ => Element(Coord(x,y), boardElem.GROUND)
         }
       }
     }.toList
   }
+
+  def genCrate = Math.random() match {
+    case v:Double if(v<0.2)  => boardElem.C_BOMB
+    case v:Double if(v<0.4)  => boardElem.C_SPEED
+    case v:Double            => boardElem.CRATE
+    }
 
   def sendPlayersList(receiver:String) = {
     members filterKeys (_!=receiver) foreach {
@@ -169,5 +175,7 @@ case class Board(elements:List[Element]) extends Message
 object boardElem {
   val GROUND  = 0
   val WALL    = 1
-  val CRATE   = 2
+  val CRATE   = 2     // CRATE WITH NO BONUS
+  val C_BOMB  = 21    // CRATE WITH BOMB BONUS
+  val C_SPEED  = 22   // CRATE WITH SPEED BONUS
 }

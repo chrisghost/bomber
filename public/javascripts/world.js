@@ -24,6 +24,9 @@ $(function(){
   Crafty.sprite(30, "/assets/images/bomb.png", { bombsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/flame.png", { flamesprite: [0,0], flame4sprite: [0,1], flameleafsprite: [0,2]})
 
+  Crafty.sprite(30, "/assets/images/b_bomb.png", { b_bombsprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/b_speed.png", { b_speedsprite: [0,0]})
+
   Crafty.c("World", {
     init: function() {
       this.bind("player_in", function(info){
@@ -36,7 +39,6 @@ $(function(){
         }
       }).bind("death", function(d){
         d.victim.die();
-        console.log("haha", d);
       });
       this.flames = [];
       this.bombers = [];
@@ -57,13 +59,33 @@ $(function(){
     drawNewBoardElem: function(elem) {
       if(typeof this.board[elem.coord.x] == 'undefined') this.board[elem.coord.x] = [];
 
-      if(elem.kind == Config.WALL)
-        var genStr = "wall, 2D, Canvas, wallsprite, Collision";
-      else if(elem.kind == Config.GROUND)
-        var genStr = "ground, 2D, Canvas, grasssprite, Collision";
-      else if(elem.kind == Config.CRATE)
-        var genStr = "crate, 2D, Canvas, cratesprite, Collision";
+      var _elemType,
+          _elemSprite;
 
+      if(elem.kind == Config.WALL) {
+        _elemType ="wall";
+        _elemSprite = "wallsprite";
+      } else if(elem.kind == Config.GROUND) {
+        _elemType ="ground";
+        _elemSprite = "grasssprite";
+      } else if(elem.kind == Config.CRATE || (elem.kind >= 20 && elem.kind < 30)) {
+        _elemType ="crate";
+        _elemSprite = "cratesprite";
+      } else if(elem.kind >= 30 && elem.kind < 40) {
+        _elemType ="Bonus, ";
+        switch(elem.kind) {
+          case Config.B_BOMB :
+              _elemType += "b_bomb";
+              _elemSprite = "b_bombsprite";
+            break;
+          case Config.B_SPEED  :
+              _elemType += "b_speed";
+              _elemSprite = "b_speedsprite";
+            break;
+        }
+      }
+
+      var genStr = _elemType+", 2D, Canvas, "+_elemSprite+", Collision";
       var cElem = Crafty.e(genStr)
       .attr(this.gridToPx(elem.coord))
       .attr({kind:elem.kind});
@@ -86,7 +108,8 @@ $(function(){
             yspeed:0,
             move:info.move,
             world:this,
-            justDropped:[]
+            justDropped:[],
+            maxBomb:1
         }).bind("newDirection"+info.userId,
           function(dir){
             this.xspeed = dir.x;
@@ -114,6 +137,16 @@ $(function(){
         if(flameHit) {
           this.burned(flameHit[0].obj);
         }
+        var bonusHit = this.hit('Bonus');
+        if(bonusHit) {
+          this.bonus(bonusHit[0].obj.kind);
+          bonusHit[0].obj.destroy();
+          this.world.clearPos({
+            "x" : bonusHit[0].obj.x,
+            "y" : bonusHit[0].obj.y
+          });
+        }
+
         if(changed)
           this.trigger('NewDirection', this._movement);
       }).bind("position"+info.userId,
@@ -149,17 +182,30 @@ $(function(){
       if(gPos.x<0 || gPos.y<0) return null;
       return this.board[gPos.x][gPos.y];
     },
+    clearPos : function(pos) {
+      var gPos = this.pxToGrid(pos);
+      this.drawNewBoardElem({
+        "coord" : gPos,
+        "kind" : Config.GROUND
+      });
+    },
     burns: function(pos) {
       if(this.hashBombPos(pos) in this.bombs) {
         this.bombs[this.hashBombPos(pos)].explode();
         return true;
       }
       var gPos = this.pxToGrid(pos);
-      if(this.board[gPos.x][gPos.y].kind == Config.CRATE) {
+      var eKind = this.board[gPos.x][gPos.y].kind;
+      if(eKind == Config.CRATE ||
+          (eKind >= 20
+           && eKind < 30)) {
+
         this.board[gPos.x][gPos.y].destroy();
+        var _kind = (eKind == Config.CRATE) ?
+          Config.GROUND : eKind + 10;
         this.drawNewBoardElem({
           "coord" : gPos,
-          "kind" : Config.GROUND
+          "kind" : _kind
         });
         return true;
       }
