@@ -234,6 +234,14 @@ $(function(){
         }, flame.time);
       }
       this.flames[flame.name].push(flame);
+    },
+    nbBombsDropped: function(userId) {
+      var match = [];
+      for(i in this.bombs)
+        if(this.bombs[i].owner == userId)
+          match.push(this.bombs[i]);
+
+      return match;
     }
   });
   Crafty.scene("main", function () {

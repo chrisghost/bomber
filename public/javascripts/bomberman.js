@@ -4,9 +4,10 @@ $(function(){
         if(typeof(d)=='undefined') d = null;
         var bPos = this.bombPos(this.getPos());
         if(this.human) {
+          if(!this.canDropBomb()) return;
           if(!this.world.isFree(bPos)) return;
 
-          if(this.justDropped.length > 1)this.justDropped.shift();
+          if(this.justDropped.length > 1) this.justDropped.shift();
           this.justDropped.push(this.nextBombName());
         }
         var bomb = Crafty.e("Bomb, 2D, Canvas, SpriteAnimation, bombsprite, Collision")
@@ -15,7 +16,8 @@ $(function(){
             name: (d) ? d.name : this.justDropped[this.justDropped.length-1],
             time:this.bombTime,
             flameTime:this.flameTime,
-            flameSize:this.flameSize
+            flameSize:this.flameSize,
+            owner:this.userId
         })
         .animate('BombScaling', 0, 0, 6)
         .animate('BombScaling', 100, -1);
@@ -29,6 +31,9 @@ $(function(){
             "flameSize":bomb.flameSize,
             "flameTime":bomb.flameTime
           });
+      },
+      canDropBomb: function() {
+        return this.maxBombs > this.world.nbBombsDropped(this.userId).length;
       },
       nextBombName : function() {
         if(typeof this.bombNum == 'undefined') this.bombNum = 0;
@@ -86,6 +91,15 @@ $(function(){
         this.bombTime = Config.DEFAULT_VALUES.bombTime;
         this.flameTime = Config.DEFAULT_VALUES.flameTime;
         this.flameSize = Config.DEFAULT_VALUES.flameSize;
+        this.maxBombs = Config.DEFAULT_VALUES.maxBombs;
+        //DEBUG
+        var that = this;
+        setInterval(function(){ that.updateHumanInfos(); }, 100);
+      },
+      updateHumanInfos: function() {
+        var playerInfos = "Speed : "+this._speed.x+", "+this._speed.y;
+        playerInfos += " | Bombs : "+this.maxBombs+" ("+this.world.nbBombsDropped(this.userId).length+")";
+        $('#bomberInfos').text(playerInfos);
       },
       incrementBombsNumber : function() {
         this.maxBombs += 1;
