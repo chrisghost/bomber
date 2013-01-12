@@ -91,7 +91,10 @@ $(function(){
         this.maxBombs += 1;
       },
       incrementSpeed : function() {
-        this.speed(20);
+        this._speed = {
+          "x": this._speed.x+Config.SPEED_BONUS_INCREASE,
+          "y": this._speed.y+Config.SPEED_BONUS_INCREASE
+        };
       }
 
   });

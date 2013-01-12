@@ -3,6 +3,7 @@ var Config = {
   "GAME_H" : 330,
   "HUMAN_SPEED" : 3,
   "BLOCK_SIZE" : 30,
+  "SPEED_BONUS_INCREASE" : 1,
   "GROUND" : 0,
   "WALL" : 1,
   "CRATE" : 2,
