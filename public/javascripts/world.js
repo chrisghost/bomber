@@ -262,6 +262,14 @@ $(function(){
     });
   });
   Bomber = Crafty.scene("main");
+
+
+  $("#imReady").click(function(e) {
+   _socket.sendData("ready", {
+     "userId":pname,
+     "ready": ($("#imReady").attr("readyState") == "true") ? false : true
+   });
+  });
 });
 function createPlayer(info) {
   if(info.userId==pname)

@@ -23,6 +23,13 @@ object Commander {
   implicit val newDirectionFormat = Json.format[NewDirection]
   implicit val elementFormat      = Json.format[Element]
   implicit val bombFormat         = Json.format[Bomb]
+  implicit val readyFormat        = Json.format[Ready]
+
+  implicit val readyListFormat : Writes[ReadyList] = new Writes[ReadyList] {
+    def writes(readyList: ReadyList) = {
+      Json.obj("readyList" -> readyList.readyList)
+    }
+  }
 
   implicit val boardWrites : Writes[Board] = new Writes[Board] {
     def writes(board:Board) = {
@@ -65,6 +72,11 @@ object Commander {
           case Right(c) => cmd(userId, c, gameName)
           case Left(e)  => println("error "+e)
         }
+      case JsString("ready") =>
+        (userCom \ "data").validate(readyFormat).asEither match {
+          case Right(c) => cmd(userId, c, gameName)
+          case Left(e)  => println("error "+e)
+        }
     }
   }
 
@@ -74,6 +86,7 @@ object Commander {
       case _:NewDirection =>  game ! userCmd
       case _:NewPlayer    =>  game ! ("broadcast" , userCmd)
       case _:Bomb         =>  game ! userCmd
+      case _:Ready        =>  game ! userCmd
     }
   }
 

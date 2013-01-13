@@ -38,17 +38,29 @@ class Game extends Actor {
       }
     }
     case bomb:Bomb => broadcast(bomb)
+    case ready:Ready => {
+      (members get ready.userId).get match {
+        case p:PlayerInfos => p.ready = ready.ready
+        case _ => println("error ")
+      }
+      broadcast(getReadyList)
+    }
+  }
+
+  def getReadyList = {
+    ReadyList(members.map(v => Ready(v._1, v._2.ready)).toList)
   }
 
   def createPlayer(userId: String, out: Channel[JsValue]) = {
     val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
 
-    members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition)))
+    members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition, false)))
 
     broadcast(NewPlayer(userId, (members get userId).get.style))
     broadcast(Position(userId, (members get userId).get.position))
     sendPlayersList(userId)
-    broadcast(Board(generateBoard(11,11)))
+    broadcast(getReadyList)
+    sendTo(userId, Board(generateBoard(11,11)))
   }
 
   def generateBoard(w:Int, h:Int) = {
@@ -94,6 +106,10 @@ class Game extends Actor {
     playerPositions(members.size)
   }
 
+  def sendTo(userId: String, msg: Message) {
+    members.filter(v => v._1 == userId).foreach(v => v._2.actor ! msg)
+  }
+
   def broadcast(msg: Message) {
     members.foreach(v => v._2.actor ! msg )
   }
@@ -103,7 +119,7 @@ class Game extends Actor {
   }
 }
 
-class PlayerInfos(val userId:String, val style:String, val actor:ActorRef, var position:Coord)
+class PlayerInfos(val userId:String, val style:String, val actor:ActorRef, var position:Coord, var ready: Boolean)
 
 class Player(out: Channel[JsValue]) extends Actor {
   import models.commander.Commander._
@@ -156,6 +172,13 @@ class Player(out: Channel[JsValue]) extends Actor {
               "c"     ->  Json.toJson(bomb)
             )
           )
+        case readyList : ReadyList =>
+          out.push(
+            Json.obj(
+              "kind"  -> "readyList",
+              "c"     ->  Json.toJson(readyList)
+            )
+          )
       }
     }
   }
@@ -167,6 +190,8 @@ case class NewPlayer(userId:String, style:String) extends Message
 case class Position(userId:String, pos:Coord) extends Message
 case class DeletePlayer(userId:String) extends Message
 case class Bomb(userId:String, name:String, x:Int, y:Int, flameSize:Int, flameTime:Int) extends Message
+case class Ready(userId: String, ready: Boolean) extends Message
+case class ReadyList(readyList: List[Ready]) extends Message
 
 case class Coord(x:Int, y:Int)
 case class Element(coord:Coord, kind:Int)

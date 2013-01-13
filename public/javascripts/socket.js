@@ -36,6 +36,14 @@ var _socket = {
     //console.log(d);
     if(d.kind=="newPlayer")
       createPlayer(d.c);
+    else if(d.kind=="readyList") {
+      var res = "<ul class=\"readyList\">";
+      for(i in d.c.readyList)
+        res+="<li class=\""+(d.c.readyList[i].ready ? "ready" : "not-ready")+"\">"+d.c.readyList[i].userId+"</li>";
+
+      res += "</ul>";
+      $("#userList").html(res);
+    }
     else if(d.kind=="newDirection") {
       Crafty.trigger("newDirection"+d.c.userId, d.c);
     }

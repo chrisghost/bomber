@@ -22,7 +22,7 @@ $(function(){
         .animate('BombScaling', 0, 0, 6)
         .animate('BombScaling', 100, -1);
         this.world.putBomb(bomb);
-        if(this.human)
+        if(this.human) {
           _socket.sendData("bomb", {
             "userId": this.userId,
             "name":bomb.name,
@@ -31,6 +31,7 @@ $(function(){
             "flameSize":bomb.flameSize,
             "flameTime":bomb.flameTime
           });
+        }
       },
       canDropBomb: function() {
         return this.maxBombs > this.world.nbBombsDropped(this.userId).length;
@@ -117,8 +118,13 @@ $(function(){
         this.bind("EnterFrame", function(){
           this.x+=this.xspeed;
           this.y+=this.yspeed;
+          this.bombTime = Config.DEFAULT_VALUES.bombTime;
+          this.flameTime = Config.DEFAULT_VALUES.flameTime;
+          this.flameSize = Config.DEFAULT_VALUES.flameSize;
+          this.maxBombs = Config.DEFAULT_VALUES.maxBombs;
         });
       }
   });
 
 });
+
