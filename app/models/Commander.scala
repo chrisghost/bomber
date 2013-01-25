@@ -10,6 +10,7 @@ import models.game._
 import play.api.libs.concurrent.Execution.Implicits._
 
 import play.api.libs.iteratee.Concurrent._
+import play.Logger
 
 object Commander {
 
@@ -65,17 +66,17 @@ object Commander {
       case JsString("newDirection") =>
         (userCom \ "data").validate(newDirectionFormat).asEither match {
           case Right(c) => cmd(userId, c, gameName)
-          case Left(e)  => println("error "+e)
+          case Left(e)  => Logger.error("Unable to parse data ("+(userCom \ "data") +"), got error : "+e)
         }
       case JsString("bomb") =>
         (userCom \ "data").validate(bombFormat).asEither match {
           case Right(c) => cmd(userId, c, gameName)
-          case Left(e)  => println("error "+e)
+          case Left(e)  => Logger.error("Unable to parse data ("+(userCom \ "data") +"), got error : "+e)
         }
       case JsString("ready") =>
         (userCom \ "data").validate(readyFormat).asEither match {
           case Right(c) => cmd(userId, c, gameName)
-          case Left(e)  => println("error "+e)
+          case Left(e)  => Logger.error("Unable to parse data ("+(userCom \ "data") +"), got error : "+e)
         }
     }
   }

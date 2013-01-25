@@ -17,6 +17,8 @@ import akka.pattern.ask
 import scala.util.Random
 
 import play.api.Play.current
+import play.Logger
+
 
 class Game extends Actor {
   import models.commander.Commander._
@@ -41,7 +43,7 @@ class Game extends Actor {
     case ready:Ready => {
       (members get ready.userId).get match {
         case p:PlayerInfos => p.ready = ready.ready
-        case _ => println("error ")
+        case _ => Logger.error("Did not find specified user")
       }
       broadcast(getReadyList)
     }
