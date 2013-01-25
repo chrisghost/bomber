@@ -88,16 +88,19 @@ class Game extends Actor {
 
   def createPlayer(userId: String, out: Channel[JsValue]) = {
     if(!members.contains(userId)) {
+      if(members.size < 4) {
 
-      val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
+        val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
 
-      members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition(userId), false, true)))
+        members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition(userId), false, true)))
 
-      broadcast(NewPlayer(userId, (members get userId).get.style))
-      broadcast(Position(userId, (members get userId).get.position))
-      sendPlayersList(userId)
-      broadcast(getReadyList)
-      sendTo(userId, Board(board.toList))
+        broadcast(NewPlayer(userId, (members get userId).get.style))
+        broadcast(Position(userId, (members get userId).get.position))
+        sendPlayersList(userId)
+        broadcast(getReadyList)
+        sendTo(userId, Board(board.toList))
+
+      }
     }
   }
 
