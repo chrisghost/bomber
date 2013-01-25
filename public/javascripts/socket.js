@@ -13,7 +13,6 @@ var _socket = {
 
     socket.onmessage = function(msg){
       var d = JSON.parse(msg.data);
-      //console.log(d);
       if(d.error) {
         console.log("error, closing socket...", d.error);
         socket.close();
@@ -29,12 +28,9 @@ var _socket = {
   },
   sendData : function(kind, data) {
     var _data = JSON.stringify({"kind":kind,"data":data});
-    //console.log(_data);
     socket.send(_data);
   },
   handleMessage : function(d) {
-    var message;
-
     if(d.kind=="newPlayer")
       createPlayer(d.c);
     else if(d.kind=="readyList") {
