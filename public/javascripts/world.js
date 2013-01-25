@@ -195,6 +195,9 @@ $(function(){
         return true;
       }
       var gPos = this.pxToGrid(pos);
+      if(typeof this.board[gPos.x] == 'undefined') return false;
+      if(typeof this.board[gPos.x][gPos.y] == 'undefined') return false;
+
       var eKind = this.board[gPos.x][gPos.y].kind;
       if(eKind == Config.CRATE ||
           (eKind >= 20
@@ -257,7 +260,9 @@ $(function(){
           world:this,
           growTo:[{x:-1,y:0},{x:1,y:0},{x:0,y:-1},{x:0,y:1}],
           life:data.life
-      });
+      })
+      .collision()//new Crafty.polygon([0,0],[30,0],[30,30],[0,30]))
+      ;
 
     });
   });

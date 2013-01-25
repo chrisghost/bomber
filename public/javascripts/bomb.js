@@ -28,12 +28,16 @@ $(function(){
       init: function() {
         var that = this;
         setTimeout(function(){ that.timer()}, 10);
+        this.bind("EnterFrame", function(){
+          var hitBomber = this.hit("Bomberman");
+          if(hitBomber) {
+            hitBomber[0].obj.die();
+          }
+        });
       },
       timer : function() {
         if(this.life>0) this.grow();
         this.world.registerFlame(this);
-        var hitBomber = this.hit("Bomberman");
-        if(hitBomber) hitBomber[0].obj.die();
       },
       grow: function(){
         for(i=0;i<this.growTo.length;i++) {
@@ -41,7 +45,15 @@ $(function(){
             if(!this.world.blocks('flame', {
                  x:this.x+gTo.x*Config.BLOCK_SIZE,
                  y: this.y+gTo.y*Config.BLOCK_SIZE})) {
-              Crafty.e("Flame, 2D, Canvas, "+((this.life==1)?"flameleafsprite":"flamesprite")+", Collision")
+
+                  var _flameSprite = ((this.life==1)?"flameleafsprite":"flamesprite");
+
+                  //if(gTo.x < 0) _flameSprite += "_left";
+                  //else if(gTo.x > 0) _flameSprite += "_right";
+                  //else if(gTo.y < 0) _flameSprite += "_down";
+                  //else if(gTo.y > 0) _flameSprite += "_up";
+
+              Crafty.e("Flame, 2D, Canvas, "+_flameSprite+", Collision")
               .attr({
                   x:this.x+gTo.x*Config.BLOCK_SIZE,
                   y:this.y+gTo.y*Config.BLOCK_SIZE,
@@ -49,11 +61,9 @@ $(function(){
                   time:this.time,
                   world:this.world,
                   growTo:[gTo],
-                  life:this.life-1,
-                  rotation:((gTo.x!=0)?90:0)+((this.life==1)?((gTo.y==1||gTo.x==-1)?180:0):0)
+                  life:this.life-1
               })
-              .origin("center")
-              .collision(new Crafty.polygon([5,5],[25,5],[25,25],[5,25]))
+              .collision()//new Crafty.polygon([0,0],[30,0],[30,30],[0,30]))
               ;
            }
         }
