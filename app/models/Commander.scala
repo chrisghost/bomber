@@ -1,15 +1,11 @@
 package models.commander
 
 import akka.actor._
-import play.api.libs.concurrent._
-
-import play.api.libs.json._
-import play.api.libs.functional.syntax._
-
 import models.game._
 import play.api.libs.concurrent.Execution.Implicits._
-
+import play.api.libs.functional.syntax._
 import play.api.libs.iteratee.Concurrent._
+import play.api.libs.json._
 import play.Logger
 
 object Commander {
@@ -26,6 +22,7 @@ object Commander {
   implicit val bombFormat         = Json.format[Bomb]
   implicit val readyFormat        = Json.format[Ready]
   implicit val destroyFormat      = Json.format[Destroy]
+  implicit val deathFormat        = Json.format[Death]
 
   implicit val readyListFormat : Writes[ReadyList] = new Writes[ReadyList] {
     def writes(readyList: ReadyList) = {
@@ -38,7 +35,6 @@ object Commander {
       Json.obj("elements" -> board.elements)
     }
   }
-
 
   def getGamesList : JsValue = {
     Json.toJson(games.map{ x => x.path.name})
@@ -88,6 +84,11 @@ object Commander {
           case Right(c) => cmd(userId, c, gameName)
           case Left(e)  => Logger.error("Unable to parse data ("+(userCom \ "data") +"), got error : "+e)
         }
+      case JsString("death") =>
+        (userCom \ "data").validate(deathFormat).asEither match {
+          case Right(c) => cmd(userId, c, gameName)
+          case Left(e)  => Logger.error("Unable to parse data ("+(userCom \ "data") +"), got error : "+e)
+        }
     }
   }
 
@@ -99,6 +100,7 @@ object Commander {
       case _:Bomb         =>  game ! userCmd
       case _:Ready        =>  game ! userCmd
       case _:Destroy      =>  game ! userCmd
+      case _:Death        =>  game ! userCmd
     }
   }
 

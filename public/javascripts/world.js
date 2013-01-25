@@ -150,7 +150,7 @@ $(function(){
         }
         var flameHit = this.hit('Flame');
         if(flameHit) {
-          this.burned(flameHit[0].obj);
+          this.burnt(flameHit[0].obj);
         }
         var bonusHit = this.hit('Bonus');
         if(bonusHit) {

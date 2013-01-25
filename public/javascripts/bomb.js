@@ -2,18 +2,19 @@ $(function(){
   Crafty.c("Bomb", {
       init: function() {
         var that = this;
-        this.burned=false;
+        this.burnt = false;
+        this.exploded = false;
         setTimeout(function(){ that.timer()}, 0);
       },
       timer : function() {
         this.explosionClock = this.timeout(function () {
-          if(!this.burned)
+          if(!this.burnt)
           this.explode();
         }, this.time);
       },
       explode: function() {
         clearTimeout(this.explosionClock);
-        this.burned = true;
+        this.burnt = true;
         Crafty.trigger("destroy-bomb", {
             x:this.x,
             y:this.y,
@@ -30,9 +31,7 @@ $(function(){
         setTimeout(function(){ that.timer()}, 10);
         this.bind("EnterFrame", function(){
           var hitBomber = this.hit("Bomberman");
-          if(hitBomber) {
-            hitBomber[0].obj.die();
-          }
+          if (hitBomber) hitBomber[0].obj.exploded(this);
         });
       },
       timer : function() {

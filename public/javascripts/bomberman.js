@@ -56,10 +56,14 @@ $(function(){
         };
       },
       die: function() {
+        _socket.sendData("death", { "userId": pname });
         this.destroy();
       },
-      burned: function(flame) {
-        Crafty.trigger("death", { victim:this, cause:flame});
+      exploded: function(bomb) {
+        Crafty.trigger("death", { victim: this, cause: bomb });
+      },
+      burnt: function(flame) {
+        Crafty.trigger("death", { victim: this, cause: flame });
       },
       bonus : function(kind) {
         switch (kind) {

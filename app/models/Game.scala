@@ -1,39 +1,24 @@
 package models.game
 
 import akka.actor._
-import scala.concurrent.duration._
-
-import play.api._
-import play.api.libs.iteratee._
 import play.api.libs.iteratee.Concurrent._
-import play.api.libs.concurrent._
-import play.api.mvc.RequestHeader
-
 import play.api.libs.json._
-
-import akka.util.Timeout
-import akka.pattern.ask
-
-import scala.util.Random
-import scala.collection.mutable.MutableList
-
-import play.api.Play.current
 import play.Logger
-
+import scala.util.Random
+import collection.mutable.MutableList
 
 class Game extends Actor {
-  import models.commander.Commander._
   private var members = Map.empty[String, PlayerInfos]
   private val bomberStyles = List("classic", "punk", "robot", "miner")
   private var playerPositions : List[(Coord, Option[String])] = List((Coord(30,30), None), (Coord(270,30), None), (Coord(30,270), None), (Coord(270,270), None))
   private var board : List[Element] = generateBoard(11,11)
 
   def receive = {
-    case m:NewDirection => {
+    case m: NewDirection => {
       broadcastBut(m.userId, m)
       (members get m.userId).get.position = m.position
     }
-    case ("createPlayer", uId:String, channel:Channel[JsValue]) => createPlayer(uId, channel)
+    case ("createPlayer", uId: String, channel: Channel[JsValue]) => createPlayer(uId, channel)
     case ("deletePlayer", userId:String) => {
       if(members contains userId) {
         context.stop((members get userId).get.actor)
@@ -52,10 +37,10 @@ class Game extends Actor {
         }
       }
     }
-    case bomb:Bomb => broadcast(bomb)
-    case ready:Ready => {
+    case bomb: Bomb => broadcast(bomb)
+    case ready: Ready => {
       (members get ready.userId).get match {
-        case p:PlayerInfos => p.ready = ready.ready
+        case p: PlayerInfos => p.ready = ready.ready
         case _ => Logger.error("Did not find specified user")
       }
       broadcast(getReadyList)
@@ -73,6 +58,9 @@ class Game extends Actor {
 
       board = board.filterNot(x => (x.coord.x == destroy.coord.x && x.coord.y == destroy.coord.y)):+Element(aim.coord, nKind)
     }
+    case Death(userId) => {
+      (members get userId).get.alive = false
+    }
   }
 
   def getReadyList = {
@@ -82,7 +70,7 @@ class Game extends Actor {
   def createPlayer(userId: String, out: Channel[JsValue]) = {
     val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
 
-    members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition(userId), false)))
+    members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition(userId), false, true)))
 
     broadcast(NewPlayer(userId, (members get userId).get.style))
     broadcast(Position(userId, (members get userId).get.position))
@@ -159,28 +147,28 @@ class Game extends Actor {
   }
 }
 
-class PlayerInfos(val userId:String, val style:String, val actor:ActorRef, var position:Coord, var ready: Boolean)
+class PlayerInfos(val userId:String, val style:String, val actor:ActorRef, var position:Coord, var ready: Boolean, var alive: Boolean)
 
 class Player(out: Channel[JsValue]) extends Actor {
   import models.commander.Commander._
   def receive = {
     case msg:Message => {
       msg match {
-        case nd : NewDirection  =>
+        case nd : NewDirection =>
           out.push(
             Json.obj(
               "kind"-> "newDirection",
               "c"   -> Json.toJson(nd)
             )
           )
-        case np : NewPlayer     =>
+        case np : NewPlayer =>
           out.push(
             Json.obj(
               "kind"-> "newPlayer",
               "c"   ->  Json.toJson(np)
             )
           )
-        case pos : Position     =>
+        case pos : Position =>
           out.push(
             Json.obj(
               "kind"-> "position",
@@ -232,6 +220,7 @@ case class DeletePlayer(userId:String) extends Message
 case class Bomb(userId:String, name:String, x:Int, y:Int, flameSize:Int, flameTime:Int) extends Message
 case class Ready(userId: String, ready: Boolean) extends Message
 case class ReadyList(readyList: List[Ready]) extends Message
+case class Death(userId: String) extends Message
 
 case class Coord(x:Int, y:Int)
 case class Element(coord:Coord, kind:Int)
