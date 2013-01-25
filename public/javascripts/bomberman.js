@@ -71,13 +71,7 @@ $(function(){
       init: function(userId) {
         this.addComponent("Multiway");
 
-        var dirControl = {};
-        for(i in Config.KEYS.up)    dirControl[Config.KEYS.up[i]] = -90;
-        for(i in Config.KEYS.down)  dirControl[Config.KEYS.down[i]] = 90;
-        for(i in Config.KEYS.left)  dirControl[Config.KEYS.left[i]] = 180;
-        for(i in Config.KEYS.right) dirControl[Config.KEYS.right[i]] = 0;
-
-        this.multiway(Config.HUMAN_SPEED, dirControl);
+        this.multiway(Config.HUMAN_SPEED, this.getDirections());
 
         this.bind("NewDirection", function (e) {
           _socket.sendData("newDirection",
@@ -97,6 +91,9 @@ $(function(){
         var that = this;
         setInterval(function(){ that.updateHumanInfos(); }, 100);
       },
+      getDirections: function() {
+        return {UP_ARROW: -90, DOWN_ARROW: 90, RIGHT_ARROW: 0, LEFT_ARROW: 180};
+      },
       updateHumanInfos: function() {
         var playerInfos = "Speed : "+this._speed.x+", "+this._speed.y;
         playerInfos += " | Bombs : "+this.maxBombs+" ("+this.world.nbBombsDropped(this.userId).length+")";
@@ -106,10 +103,7 @@ $(function(){
         this.maxBombs += 1;
       },
       incrementSpeed : function() {
-        this._speed = {
-          "x": this._speed.x+Config.SPEED_BONUS_INCREASE,
-          "y": this._speed.y+Config.SPEED_BONUS_INCREASE
-        };
+        this.multiway(this._speed.x + Config.SPEED_BONUS_INCREASE, this.getDirections());
       }
 
   });
