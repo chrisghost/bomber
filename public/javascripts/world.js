@@ -35,9 +35,9 @@ $(function(){
     flamesprite_down: [2,1]
   })
 
-  Crafty.sprite(30, "/assets/images/b_bomb.png", { b_bombsprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/b_speed.png", { b_speedsprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/flame.png", { b_flamesprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/bombe-bonus.png", { b_bombsprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/speed-bonus.png", { b_speedsprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/feu-bonus.png", { b_flamesprite: [0,0]})
 
   Crafty.c("World", {
     init: function() {
