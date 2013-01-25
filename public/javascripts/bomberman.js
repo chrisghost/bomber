@@ -56,7 +56,7 @@ $(function(){
         };
       },
       die: function() {
-        _socket.sendData("death", { "userId": pname });
+        if(this.human) _socket.sendData("death", { "userId": pname });
         this.destroy();
       },
       exploded: function(bomb) {
