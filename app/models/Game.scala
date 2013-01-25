@@ -45,7 +45,9 @@ class Game extends Actor {
       broadcast(getReadyList)
     }
     case destroy:Destroy => {
-      val aim = board.find(x => (x.coord.x == destroy.coord.x && x.coord.y == destroy.coord.y)).get
+      val mPos = Coord(destroy.coord.x/30, destroy.coord.y/30)
+
+      val aim = board.find(el => (el.coord.x == mPos.x && el.coord.y == mPos.y)).get
 
       val nKind = aim.kind match {
         case boardElem.CRATE => boardElem.GROUND
@@ -55,7 +57,8 @@ class Game extends Actor {
         case _ => boardElem.GROUND
       }
 
-      board = board.filterNot(x => (x.coord.x == destroy.coord.x && x.coord.y == destroy.coord.y)):+Element(aim.coord, nKind)
+      board = board.filterNot(x => (x.coord.x == mPos.x && x.coord.y == mPos.y)):+Element(aim.coord, nKind)
+      broadcastBut(destroy.userId, destroy)
     }
     case death: Death => {
       val userId = death.userId
@@ -233,6 +236,13 @@ class Player(out: Channel[JsValue]) extends Actor {
             "kind"  -> "gotwinner",
             "c"     ->  Json.toJson(gotWinner)
           ))
+        case destroy : Destroy =>
+          out.push(
+            Json.obj(
+              "kind"  -> "destroy",
+              "c"     ->  Json.toJson(destroy)
+            )
+          )
       }
     }
   }
@@ -254,7 +264,7 @@ case class Coord(x:Int, y:Int)
 case class Element(coord:Coord, kind:Int)
 case class Board(elements:List[Element]) extends Message
 
-case class Destroy(coord:Coord) extends Message
+case class Destroy(userId:String, coord:Coord) extends Message
 
 object boardElem {
   val GROUND  = 0

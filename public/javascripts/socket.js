@@ -55,12 +55,14 @@ var _socket = {
     }
     else if(d.kind=="bomb") {
       Crafty.trigger("dropBomb"+d.c.userId, d.c);
-    }
-    else if(d.kind=="death") {
+    } else if(d.kind=="death") {
       humane.log((d.c.userId == pname) ? "You died. Game over." : d.c.userId + " has died");
     }
     else if(d.kind=="gotwinner") {
       humane.log((d.c.winner == pname) ? "You won!" : d.c.winner + " won!");
+    } else if(d.kind=="destroy") {
+      Crafty.trigger("destroy", d.c);
+      Crafty.trigger("destroy"+d.c.coord.x+"-"+d.c.coord.y, d.c);
     }
   }
 };

@@ -103,7 +103,10 @@ $(function(){
       var genStr = _elemType+", 2D, Canvas, "+_elemSprite+", Collision";
       var cElem = Crafty.e(genStr)
       .attr(this.gridToPx(elem.coord))
-      .attr({kind:elem.kind});
+      .attr({kind:elem.kind})
+      .bind("destroy"+elem.coord.x+"-"+elem.coord.y, function(d){
+          //this.destroy();
+      });
 
       this.board[elem.coord.x][elem.coord.y] = cElem;
     },
@@ -159,6 +162,14 @@ $(function(){
           this.world.clearPos({
             "x" : bonusHit[0].obj.x,
             "y" : bonusHit[0].obj.y
+          });
+
+          _socket.sendData("destroy", {
+            "userId" : pname,
+            "coord" : {
+              "x" : bonusHit[0].obj.x,
+              "y" : bonusHit[0].obj.y
+            }
           });
         }
 
@@ -219,7 +230,6 @@ $(function(){
            && eKind < 30)) {
 
         this.board[gPos.x][gPos.y].destroy();
-        _socket.sendData("destroy", { coord : { "x":gPos.x, "y":gPos.y } });
 
         var _kind = (eKind == Config.CRATE) ?
           Config.GROUND : eKind + 10;
@@ -281,6 +291,11 @@ $(function(){
       .collision()//new Crafty.polygon([0,0],[30,0],[30,30],[0,30]))
       ;
 
+    }).bind("destroy", function(d){
+      this.clearPos({
+      "x": d.coord.x,
+      "y": d.coord.y
+      });
     });
   });
   Bomber = Crafty.scene("main");
