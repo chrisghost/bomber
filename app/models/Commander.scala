@@ -16,7 +16,7 @@ object Commander {
 
   val system = ActorSystem("BomberLand")
   val _game = system.actorOf(Props[Game], name = "game")
-  var games = List(_game)
+  var games : List[ActorRef] = List(_game)
 
   implicit val coordFormat        = Json.format[Coord]
   implicit val deletePlayerFormat = Json.format[DeletePlayer]
@@ -43,14 +43,18 @@ object Commander {
     Json.toJson(games.map{ x => x.path.name})
   }
 
+  def deleteGame(actor: ActorRef) = {
+    games = games.filterNot(_ == actor)
+  }
+
   def getGame (gameName : String) = {
-    (games.filter(_.path.name.equals(gameName))) match {
-       case head::tail => head
-       case Nil => {
-          val newGame = system.actorOf(Props[Game], name = gameName)
-          games = games :+ newGame
-          newGame
-       }
+    games.find(_.path.name == gameName) match {
+      case None =>
+        val newGame = system.actorOf(Props[Game], name = gameName)
+        games = games :+ newGame
+        newGame
+      case Some(game) =>
+        game
     }
   }
 

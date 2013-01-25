@@ -25,9 +25,8 @@ class Game extends Actor {
   import models.commander.Commander._
   private var members = Map.empty[String, PlayerInfos]
   private val bomberStyles = List("classic", "punk", "robot", "miner")
-  private val playerPositions = List(Coord(30,30), Coord(270,30), Coord(30,270), Coord(270,270))
   private val board : MutableList[Element] = MutableList(generateBoard(11,11):_*)
-
+  private var playerPositions : List[(Coord, Option[String])] = List((Coord(30,30), None), (Coord(270,30), None), (Coord(30,270), None), (Coord(270,270), None))
 
   def receive = {
     case m:NewDirection => {
@@ -40,6 +39,17 @@ class Game extends Actor {
         context.stop((members get userId).get.actor)
         members -= userId
         broadcast(DeletePlayer(userId))
+        playerPositions.find(_._2 == Some(userId)) match {
+          case Some(pos) =>
+            playerPositions = playerPositions.filterNot(_ == pos)
+            playerPositions = playerPositions :+ (pos._1, None)
+          case None =>
+            Logger.error("WEIRD You did'nt have position")
+        }
+        if(members.isEmpty) {
+          models.commander.Commander.deleteGame(self)
+          context.stop(self)
+        }
       }
     }
     case bomb:Bomb => broadcast(bomb)
@@ -59,7 +69,7 @@ class Game extends Actor {
   def createPlayer(userId: String, out: Channel[JsValue]) = {
     val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
 
-    members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition, false)))
+    members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition(userId), false)))
 
     broadcast(NewPlayer(userId, (members get userId).get.style))
     broadcast(Position(userId, (members get userId).get.position))
@@ -108,8 +118,19 @@ class Game extends Actor {
     }
   }
 
-  def nextPlayerPosition = {
-    playerPositions(members.size)
+  def nextPlayerPosition(player: String) = {
+    val pos = playerPositions.find(!_._2.isDefined)
+    val returned = pos match {
+      case Some(pos) =>
+        playerPositions = playerPositions.filterNot(_ == pos)
+        val nPos = (pos._1, Some(player))
+        playerPositions = playerPositions :+ nPos
+        nPos
+      case None =>
+        Logger.error("GAME IS FULL")
+        playerPositions(0)
+    }
+    returned._1
   }
 
   def sendTo(userId: String, msg: Message) {
