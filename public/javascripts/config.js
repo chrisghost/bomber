@@ -4,13 +4,16 @@ var Config = {
   "HUMAN_SPEED" : 3,
   "BLOCK_SIZE" : 30,
   "SPEED_BONUS_INCREASE" : 1,
+  "FLAME_BONUS_INCREASE" : 1,
   "GROUND" : 0,
   "WALL" : 1,
   "CRATE" : 2,
   "C_BOMB" : 21,
   "C_SPEED" : 22,
+  "C_FLAME" : 23,
   "B_BOMB" : 31,
   "B_SPEED" : 32,
+  "B_FLAME" : 33,
   "KEYS" : {
     "up" : [ Crafty.keys['UP_ARROW'], Crafty.keys['K']],
     "down" : [Crafty.keys['DOWN_ARROW'], Crafty.keys['J']],
@@ -20,7 +23,7 @@ var Config = {
   },
   "DEFAULT_VALUES" : {
     "bombTime" : 2000,
-    "flameTime" : 1000,
+    "flameTime" : 800,
     "flameSize" : 1,
     "maxBombs" : 1
   }

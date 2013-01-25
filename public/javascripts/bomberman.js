@@ -10,6 +10,8 @@ $(function(){
           if(this.justDropped.length > 1) this.justDropped.shift();
           this.justDropped.push(this.nextBombName());
         }
+        if(d) this.flameSize = d.flameSize;
+
         var bomb = Crafty.e("Bomb, 2D, Canvas, SpriteAnimation, bombsprite, Collision")
         .attr(bPos)
         .attr({
@@ -63,6 +65,7 @@ $(function(){
         switch (kind) {
           case Config.B_BOMB : this.incrementBombsNumber(); break;
           case Config.B_SPEED : this.incrementSpeed(); break;
+          case Config.B_FLAME : this.incrementFlame(); break;
         }
       }
   });
@@ -97,6 +100,7 @@ $(function(){
       updateHumanInfos: function() {
         var playerInfos = "Speed : "+this._speed.x+", "+this._speed.y;
         playerInfos += " | Bombs : "+this.maxBombs+" ("+this.world.nbBombsDropped(this.userId).length+")";
+        playerInfos += " | FlameSize : "+this.flameSize;
         $('#bomberInfos').text(playerInfos);
       },
       incrementBombsNumber : function() {
@@ -104,6 +108,9 @@ $(function(){
       },
       incrementSpeed : function() {
         this.multiway(this._speed.x + Config.SPEED_BONUS_INCREASE, this.getDirections());
+      },
+      incrementFlame: function() {
+        this.flameSize += 1;
       }
 
   });

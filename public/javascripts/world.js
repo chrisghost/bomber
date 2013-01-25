@@ -26,6 +26,7 @@ $(function(){
 
   Crafty.sprite(30, "/assets/images/b_bomb.png", { b_bombsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/b_speed.png", { b_speedsprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/flame.png", { b_flamesprite: [0,0]})
 
   Crafty.c("World", {
     init: function() {
@@ -82,6 +83,9 @@ $(function(){
               _elemType += "b_speed";
               _elemSprite = "b_speedsprite";
             break;
+          case Config.B_FLAME :
+              _elemType += "b_flame";
+              _elemSprite = "b_flamesprite";
         }
       }
 

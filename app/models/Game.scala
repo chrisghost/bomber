@@ -92,6 +92,7 @@ class Game extends Actor {
   def genCrate = Math.random() match {
     case v:Double if(v<0.2)  => boardElem.C_BOMB
     case v:Double if(v<0.4)  => boardElem.C_SPEED
+    case v:Double if(v<0.6)  => boardElem.C_FLAME
     case v:Double            => boardElem.CRATE
     }
 
@@ -205,4 +206,5 @@ object boardElem {
   val CRATE   = 2     // CRATE WITH NO BONUS
   val C_BOMB  = 21    // CRATE WITH BOMB BONUS
   val C_SPEED  = 22   // CRATE WITH SPEED BONUS
+  val C_FLAME = 23    // CRATE WITH FLAME BONUS
 }
