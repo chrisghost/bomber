@@ -15,6 +15,7 @@ import akka.util.Timeout
 import akka.pattern.ask
 
 import scala.util.Random
+import scala.collection.mutable.MutableList
 
 import play.api.Play.current
 import play.Logger
@@ -25,6 +26,8 @@ class Game extends Actor {
   private var members = Map.empty[String, PlayerInfos]
   private val bomberStyles = List("classic", "punk", "robot", "miner")
   private val playerPositions = List(Coord(30,30), Coord(270,30), Coord(30,270), Coord(270,270))
+  private val board : MutableList[Element] = MutableList(generateBoard(11,11):_*)
+
 
   def receive = {
     case m:NewDirection => {
@@ -62,7 +65,7 @@ class Game extends Actor {
     broadcast(Position(userId, (members get userId).get.position))
     sendPlayersList(userId)
     broadcast(getReadyList)
-    sendTo(userId, Board(generateBoard(11,11)))
+    sendTo(userId, Board(board.toList))
   }
 
   def generateBoard(w:Int, h:Int) = {
