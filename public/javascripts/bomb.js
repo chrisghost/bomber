@@ -48,10 +48,10 @@ $(function(){
 
                   var _flameSprite = ((this.life==1)?"flameleafsprite":"flamesprite");
 
-                  //if(gTo.x < 0) _flameSprite += "_left";
-                  //else if(gTo.x > 0) _flameSprite += "_right";
-                  //else if(gTo.y < 0) _flameSprite += "_down";
-                  //else if(gTo.y > 0) _flameSprite += "_up";
+                  if(gTo.x < 0) _flameSprite += "_left";
+                  else if(gTo.x > 0) _flameSprite += "_right";
+                  else if(gTo.y < 0) _flameSprite += "_up";
+                  else if(gTo.y > 0) _flameSprite += "_down";
 
               Crafty.e("Flame, 2D, Canvas, "+_flameSprite+", Collision")
               .attr({

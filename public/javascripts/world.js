@@ -22,7 +22,18 @@ $(function(){
   Crafty.sprite(30, "/assets/images/bois.png", { cratesprite: [0,0]})
   Crafty.sprite(30, "/assets/images/wall.png", { wallsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/bomb.png", { bombsprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/flame.png", { flamesprite: [0,0], flame4sprite: [0,1], flameleafsprite: [0,2]})
+  Crafty.sprite(30, "/assets/images/flammes.png", {
+    flamesprite: [0,0],
+    flame4sprite: [2,2],
+    flameleafsprite_left: [0,2],
+    flameleafsprite_right: [4,2],
+    flameleafsprite_up: [2,0],
+    flameleafsprite_down: [2,4],
+    flamesprite_left: [1,2],
+    flamesprite_right: [4,2],
+    flamesprite_up: [2,1],
+    flamesprite_down: [2,1]
+  })
 
   Crafty.sprite(30, "/assets/images/b_bomb.png", { b_bombsprite: [0,0]})
   Crafty.sprite(30, "/assets/images/b_speed.png", { b_speedsprite: [0,0]})
