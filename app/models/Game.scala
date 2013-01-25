@@ -25,8 +25,8 @@ class Game extends Actor {
   import models.commander.Commander._
   private var members = Map.empty[String, PlayerInfos]
   private val bomberStyles = List("classic", "punk", "robot", "miner")
-  private val board : MutableList[Element] = MutableList(generateBoard(11,11):_*)
   private var playerPositions : List[(Coord, Option[String])] = List((Coord(30,30), None), (Coord(270,30), None), (Coord(30,270), None), (Coord(270,270), None))
+  private var board : List[Element] = generateBoard(11,11)
 
   def receive = {
     case m:NewDirection => {
@@ -59,6 +59,19 @@ class Game extends Actor {
         case _ => Logger.error("Did not find specified user")
       }
       broadcast(getReadyList)
+    }
+    case destroy:Destroy => {
+      val aim = board.find(x => (x.coord.x == destroy.coord.x && x.coord.y == destroy.coord.y)).get
+
+      val nKind = aim.kind match {
+        case boardElem.CRATE => boardElem.GROUND
+        case boardElem.C_BOMB => boardElem.B_BOMB
+        case boardElem.C_FLAME => boardElem.B_FLAME
+        case boardElem.C_SPEED => boardElem.B_SPEED
+        case _ => boardElem.GROUND
+      }
+
+      board = board.filterNot(x => (x.coord.x == destroy.coord.x && x.coord.y == destroy.coord.y)):+Element(aim.coord, nKind)
     }
   }
 
@@ -224,6 +237,8 @@ case class Coord(x:Int, y:Int)
 case class Element(coord:Coord, kind:Int)
 case class Board(elements:List[Element]) extends Message
 
+case class Destroy(coord:Coord) extends Message
+
 object boardElem {
   val GROUND  = 0
   val WALL    = 1
@@ -231,4 +246,7 @@ object boardElem {
   val C_BOMB  = 21    // CRATE WITH BOMB BONUS
   val C_SPEED  = 22   // CRATE WITH SPEED BONUS
   val C_FLAME = 23    // CRATE WITH FLAME BONUS
+  val B_BOMB  = 31
+  val B_SPEED  = 32
+  val B_FLAME = 33
 }

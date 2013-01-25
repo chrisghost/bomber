@@ -219,6 +219,8 @@ $(function(){
            && eKind < 30)) {
 
         this.board[gPos.x][gPos.y].destroy();
+        _socket.sendData("destroy", { coord : { "x":gPos.x, "y":gPos.y } });
+
         var _kind = (eKind == Config.CRATE) ?
           Config.GROUND : eKind + 10;
         this.drawNewBoardElem({

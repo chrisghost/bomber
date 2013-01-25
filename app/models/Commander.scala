@@ -25,6 +25,7 @@ object Commander {
   implicit val elementFormat      = Json.format[Element]
   implicit val bombFormat         = Json.format[Bomb]
   implicit val readyFormat        = Json.format[Ready]
+  implicit val destroyFormat      = Json.format[Destroy]
 
   implicit val readyListFormat : Writes[ReadyList] = new Writes[ReadyList] {
     def writes(readyList: ReadyList) = {
@@ -82,6 +83,11 @@ object Commander {
           case Right(c) => cmd(userId, c, gameName)
           case Left(e)  => Logger.error("Unable to parse data ("+(userCom \ "data") +"), got error : "+e)
         }
+      case JsString("destroy") =>
+        (userCom \ "data").validate(destroyFormat).asEither match {
+          case Right(c) => cmd(userId, c, gameName)
+          case Left(e)  => Logger.error("Unable to parse data ("+(userCom \ "data") +"), got error : "+e)
+        }
     }
   }
 
@@ -92,6 +98,7 @@ object Commander {
       case _:NewPlayer    =>  game ! ("broadcast" , userCmd)
       case _:Bomb         =>  game ! userCmd
       case _:Ready        =>  game ! userCmd
+      case _:Destroy      =>  game ! userCmd
     }
   }
 
