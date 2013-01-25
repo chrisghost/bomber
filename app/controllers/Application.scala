@@ -23,7 +23,9 @@ object Application extends Controller {
   }
 
   def gamesList = Action {
-    Ok(Commander.getGamesList)
+    Async {
+      Commander.getGamesList.map(Ok(_))
+    }
   }
 
   def connect(gameName:String, userId:String) = WebSocket.using[JsValue] { implicit request =>

@@ -23,7 +23,7 @@ var Config = {
   },
   "DEFAULT_VALUES" : {
     "bombTime" : 2000,
-    "flameTime" : 800,
+    "flameTime" : 500,
     "flameSize" : 1,
     "maxBombs" : 1
   }

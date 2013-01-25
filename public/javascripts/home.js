@@ -23,7 +23,7 @@ function updateGamesList() {
     success: function(data) {
       var glst = "<ul class='glst'>";
       for (i in data) {
-        glst += "<li gid='"+data[i]+"'>"+data[i]+"</li>";
+        glst += "<li gid='"+data[i].name+"'><a href='#' class='gameName'>"+data[i].name+"</a>"+data[i].nbPlayers+"/4"+"</li>";
       }
       glst += "</ul>";
       $("#gamesList").html(glst);

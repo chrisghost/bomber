@@ -100,8 +100,8 @@ $(function(){
         return {UP_ARROW: -90, DOWN_ARROW: 90, RIGHT_ARROW: 0, LEFT_ARROW: 180};
       },
       updateHumanInfos: function() {
-        var playerInfos = "Speed : "+this._speed.x+", "+this._speed.y;
-        playerInfos += " | Bombs : "+this.maxBombs+" ("+this.world.nbBombsDropped(this.userId).length+")";
+        var playerInfos = "Speed : "+this._speed.x;
+        playerInfos += " | Bombs : "+this.maxBombs;
         playerInfos += " | FlameSize : "+this.flameSize;
         $('#bomberInfos').text(playerInfos);
       },
@@ -109,7 +109,8 @@ $(function(){
         this.maxBombs += 1;
       },
       incrementSpeed : function() {
-        this.multiway(this._speed.x + Config.SPEED_BONUS_INCREASE, this.getDirections());
+        if(this._speed.x < 7)
+          this.multiway(this._speed.x + Config.SPEED_BONUS_INCREASE, this.getDirections());
       },
       incrementFlame: function() {
         this.flameSize += 1;

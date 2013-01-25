@@ -4,9 +4,13 @@ import akka.actor._
 import models.game._
 import play.api.libs.concurrent.Execution.Implicits._
 import play.api.libs.functional.syntax._
+import scala.concurrent.duration._
 import play.api.libs.iteratee.Concurrent._
 import play.api.libs.json._
 import play.Logger
+import scala.concurrent.Future
+import akka.util.Timeout
+import akka.pattern.{ ask, pipe }
 
 object Commander {
 
@@ -42,8 +46,21 @@ object Commander {
     }
   }
 
-  def getGamesList : JsValue = {
-    Json.toJson(games.map{ x => x.path.name})
+  def getGamesList : Future[JsValue] = {
+    implicit val timeout = Timeout(2.seconds)
+    val fgames = games.map{ x =>
+      val nbPlayers = (x ? HowManyPlayer).mapTo[Int]
+      nbPlayers.map { nb =>
+        Json.obj(
+          "name" -> x.path.name,
+          "nbPlayers" ->  nb
+        )
+      }
+    }
+    Future.sequence(fgames).map { list =>
+      Json.toJson(list)
+    }
+
   }
 
   def deleteGame(actor: ActorRef) = {

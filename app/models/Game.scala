@@ -68,6 +68,8 @@ class Game extends Actor {
       if (1 == aliveMembers.size)
         broadcast(new GotWinner(aliveMembers.head._2.userId))
     }
+
+    case HowManyPlayer => sender ! members.size
   }
 
   def getReadyList = {
@@ -237,8 +239,12 @@ case class DeletePlayer(userId:String) extends Message
 case class Bomb(userId:String, name:String, x:Int, y:Int, flameSize:Int, flameTime:Int) extends Message
 case class Ready(userId: String, ready: Boolean) extends Message
 case class ReadyList(readyList: List[Ready]) extends Message
+<<<<<<< HEAD
 case class Death(userId: String) extends Message
 case class GotWinner(winner: String) extends Message
+=======
+case object HowManyPlayer extends Message
+>>>>>>> nbplayer list home / clear UI / reduce flametime
 
 case class Coord(x:Int, y:Int)
 case class Element(coord:Coord, kind:Int)
