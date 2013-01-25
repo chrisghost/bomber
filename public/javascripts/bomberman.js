@@ -60,9 +60,11 @@ $(function(){
         this.destroy();
       },
       exploded: function(bomb) {
+        console.log("bomb")
         Crafty.trigger("death", { victim: this, cause: bomb });
       },
       burnt: function(flame) {
+        console.log("flame")
         Crafty.trigger("death", { victim: this, cause: flame });
       },
       bonus : function(kind) {

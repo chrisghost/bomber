@@ -60,6 +60,17 @@ class Game extends Actor {
     }
     case Death(userId) => {
       (members get userId).get.alive = false
+      members.size match {
+        case 1 => {
+          println(userId + " died")
+          println("game over")
+        }
+        case _ => {
+          println(userId)
+          val winner = members.filter(m => m._2.alive == true).head
+          println(winner._2.userId + " won")
+        }
+      }
     }
   }
 
@@ -207,6 +218,14 @@ class Player(out: Channel[JsValue]) extends Actor {
               "c"     ->  Json.toJson(readyList)
             )
           )
+//        case death : Death =>
+//          println("someone's dead")
+//          out.push(
+//            Json.obj(
+//              "kind"  -> "death",
+//              "c"     ->  Json.toJson(death)
+//            )
+//          )
       }
     }
   }
