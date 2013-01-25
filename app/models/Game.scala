@@ -32,8 +32,7 @@ class Game extends Actor {
             Logger.error("WEIRD You did'nt have position")
         }
         if(members.isEmpty) {
-          models.commander.Commander.deleteGame(self)
-          context.stop(self)
+          terminateGame
         }
       }
     }
@@ -65,11 +64,19 @@ class Game extends Actor {
       broadcast(death)
 
       val aliveMembers = members.filter(m => true == m._2.alive)
-      if (1 == aliveMembers.size)
+      if (1 == aliveMembers.size) {
         broadcast(new GotWinner(aliveMembers.head._2.userId))
+        terminateGame
+      }
     }
 
     case HowManyPlayer => sender ! members.size
+  }
+
+  def terminateGame = {
+    models.commander.Commander.deleteGame(self)
+    Logger.info("Game "+self.path.name+" is over")
+    context.stop(self)
   }
 
   def getReadyList = {
