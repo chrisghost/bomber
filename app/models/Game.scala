@@ -58,19 +58,15 @@ class Game extends Actor {
 
       board = board.filterNot(x => (x.coord.x == destroy.coord.x && x.coord.y == destroy.coord.y)):+Element(aim.coord, nKind)
     }
-    case Death(userId) => {
+    case death: Death => {
+      val userId = death.userId
+
       (members get userId).get.alive = false
-      members.size match {
-        case 1 => {
-          println(userId + " died")
-          println("game over")
-        }
-        case _ => {
-          println(userId)
-          val winner = members.filter(m => m._2.alive == true).head
-          println(winner._2.userId + " won")
-        }
-      }
+      broadcast(death)
+
+      val aliveMembers = members.filter(m => true == m._2.alive)
+      if (1 == aliveMembers.size)
+        broadcast(new GotWinner(aliveMembers.head._2.userId))
     }
   }
 
@@ -218,14 +214,16 @@ class Player(out: Channel[JsValue]) extends Actor {
               "c"     ->  Json.toJson(readyList)
             )
           )
-//        case death : Death =>
-//          println("someone's dead")
-//          out.push(
-//            Json.obj(
-//              "kind"  -> "death",
-//              "c"     ->  Json.toJson(death)
-//            )
-//          )
+        case death: Death =>
+          out.push(Json.obj(
+            "kind"  -> "death",
+            "c"     ->  Json.toJson(death)
+          ))
+        case gotWinner : GotWinner =>
+          out.push(Json.obj(
+            "kind"  -> "gotwinner",
+            "c"     ->  Json.toJson(gotWinner)
+          ))
       }
     }
   }
@@ -240,6 +238,7 @@ case class Bomb(userId:String, name:String, x:Int, y:Int, flameSize:Int, flameTi
 case class Ready(userId: String, ready: Boolean) extends Message
 case class ReadyList(readyList: List[Ready]) extends Message
 case class Death(userId: String) extends Message
+case class GotWinner(winner: String) extends Message
 
 case class Coord(x:Int, y:Int)
 case class Element(coord:Coord, kind:Int)

@@ -36,6 +36,12 @@ object Commander {
     }
   }
 
+  implicit val gotWinnerFormat: Writes[GotWinner] = new Writes[GotWinner] {
+    def writes(gotWinner: GotWinner) = {
+      Json.obj("winner" -> gotWinner.winner)
+    }
+  }
+
   def getGamesList : JsValue = {
     Json.toJson(games.map{ x => x.path.name})
   }
@@ -105,4 +111,3 @@ object Commander {
   }
 
 }
-
