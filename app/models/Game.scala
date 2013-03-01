@@ -169,13 +169,25 @@ class Game extends Actor {
     val down = geneMap.find(el => el.gCoord.x == geneP.gCoord.x && el.gCoord.y == geneP.gCoord.y+1).map(_.gene).getOrElse(false)
 
 
-    if (!left) makeWall(geneP.coord.x, geneP.coord.y,geneP.coord.x,geneP.coord.y+10)
+    if (left)
+      wallToDotted(geneP.coord.x, geneP.coord.y,geneP.coord.x,geneP.coord.y+10)
+    else
+      makeWall(geneP.coord.x, geneP.coord.y,geneP.coord.x,geneP.coord.y+10)
 
-    if(!right) makeWall(geneP.coord.x+10, geneP.coord.y,geneP.coord.x+10,geneP.coord.y+10)
+    if(right)
+      wallToDotted(geneP.coord.x+10, geneP.coord.y,geneP.coord.x+10,geneP.coord.y+10)
+    else
+      makeWall(geneP.coord.x+10, geneP.coord.y,geneP.coord.x+10,geneP.coord.y+10)
 
-    if(!up) makeWall(geneP.coord.x, geneP.coord.y,geneP.coord.x+10,geneP.coord.y)
+    if(up)
+      wallToDotted(geneP.coord.x, geneP.coord.y,geneP.coord.x+10,geneP.coord.y)
+    else
+      makeWall(geneP.coord.x, geneP.coord.y,geneP.coord.x+10,geneP.coord.y)
 
-    if(!down) makeWall(geneP.coord.x, geneP.coord.y+10,geneP.coord.x+10,geneP.coord.y+10)
+    if(down)
+      wallToDotted(geneP.coord.x, geneP.coord.y+10,geneP.coord.x+10,geneP.coord.y+10)
+    else
+      makeWall(geneP.coord.x, geneP.coord.y+10,geneP.coord.x+10,geneP.coord.y+10)
 
     Coord((geneP.coord.x+5)*30, (geneP.coord.y+5)*30)
 
@@ -190,7 +202,7 @@ class Game extends Actor {
 
     (for (a <- xr; b <- yr) yield(a,b)).map {
       case (x,y) => {
-        board = board.filterNot(x => (x.coord.x == x && x.coord.y == y)):+Element(Coord(x,y), boardElem.WALL)
+        board = board.filterNot(e => (e.coord.x == x && e.coord.y == y)):+Element(Coord(x,y), boardElem.WALL)
       }
     }
   }
@@ -203,7 +215,7 @@ class Game extends Actor {
     val yr = y until toY+1
 
     (for (a <- xr; b <- yr) yield(a,b)).map {
-      case (x,y) if(!(x%2==0 && y%2==0)) => board = board.filterNot(x => (x.coord.x == x && x.coord.y == y)):+Element(Coord(x,y), boardElem.GROUND)
+      case (x,y) if(!(x%2==0 && y%2==0)) => board = board.filterNot(e => (e.coord.x == x && e.coord.y == y)):+Element(Coord(x,y), boardElem.GROUND)
       case _ =>
     }
   }
