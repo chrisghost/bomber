@@ -103,10 +103,7 @@ $(function(){
       var genStr = _elemType+", 2D, Canvas, "+_elemSprite+", Collision";
       var cElem = Crafty.e(genStr)
       .attr(this.gridToPx(elem.coord))
-      .attr({kind:elem.kind})
-      .bind("destroy"+elem.coord.x+"-"+elem.coord.y, function(d){
-          //this.destroy();
-      });
+      .attr({kind:elem.kind});
 
       this.board[elem.coord.x][elem.coord.y] = cElem;
     },
@@ -140,12 +137,20 @@ $(function(){
         this.updateViewPort();
 
         var changed=false;
-        if (this.hit('wall') || this.hit('crate')) {
+        if (this.hit('wall')) {
+          console.log("wall")
+          this.attr({x: from.x, y:from.y});
+          changed=true;
+        }
+        if(this.hit('crate')) {
+          console.log("crate")
+          console.log(this.hit("crate")[0].obj);
           this.attr({x: from.x, y:from.y});
           changed=true;
         }
         var bombHit = this.hit('Bomb');
         if (bombHit) {
+          console.log("hit bomb")
           if(this.justDropped.indexOf(bombHit[0].obj.name) == -1) {
             this.attr({x: from.x, y:from.y});
             changed=true;
@@ -167,12 +172,15 @@ $(function(){
             "y" : bonusHit[0].obj.y
           });
 
+          console.log("send destroy bonus")
+
           _socket.sendData("destroy", {
             "userId" : pname,
             "coord" : {
               "x" : bonusHit[0].obj.x,
               "y" : bonusHit[0].obj.y
-            }
+            },
+            "kind" : bonusHit[0].obj.kind
           });
         }
 
@@ -232,6 +240,17 @@ $(function(){
       if(eKind == Config.CRATE ||
           (eKind >= 20
            && eKind < 30)) {
+
+
+        _socket.sendData("destroy", {
+          "userId" : pname,
+          "coord" : {
+            "x" : pos.x,
+            "y" : pos.y
+          },
+          "kind" : eKind
+        });
+        console.log("destroy pos", gPos.x, gPos.y);
 
         this.board[gPos.x][gPos.y].destroy();
 
@@ -294,7 +313,6 @@ $(function(){
       })
       .collision()//new Crafty.polygon([0,0],[30,0],[30,30],[0,30]))
       ;
-
     }).bind("destroy", function(d){
       this.clearPos({
       "x": d.coord.x,

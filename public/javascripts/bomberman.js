@@ -60,7 +60,6 @@ $(function(){
         this.destroy();
       },
       burned: function(flame) {
-        console.log("flame")
         Crafty.trigger("death", { victim: this, cause: flame });
       },
       bonus : function(kind) {
@@ -109,8 +108,8 @@ $(function(){
         this.maxBombs += 1;
       },
       incrementSpeed : function() {
-        if(this._speed.x < 7)
-          this.multiway(this._speed.x + Config.SPEED_BONUS_INCREASE, this.getDirections());
+        // if(this._speed.x < 3)
+        //   this.multiway(this._speed.x + Config.SPEED_BONUS_INCREASE, this.getDirections());
       },
       incrementFlame: function() {
         this.flameSize += 1;

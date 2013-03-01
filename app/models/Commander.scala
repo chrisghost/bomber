@@ -27,6 +27,7 @@ object Commander {
   implicit val readyFormat        = Json.format[Ready]
   implicit val destroyFormat      = Json.format[Destroy]
   implicit val deathFormat        = Json.format[Death]
+  implicit val destroyedFormat    = Json.format[Destroyed]
 
   implicit val readyListFormat : Writes[ReadyList] = new Writes[ReadyList] {
     def writes(readyList: ReadyList) = {
@@ -67,23 +68,25 @@ object Commander {
     games = games.filterNot(_ == actor)
   }
 
-  def getGame (gameName : String) = {
-    games.find(_.path.name == gameName) match {
-      case None =>
+  def getGame (gameName : String, createIfNot: Boolean = true) = {
+    (games.find(_.path.name == gameName), createIfNot) match {
+      case (None, true) =>
         val newGame = system.actorOf(Props[Game], name = gameName)
         games = games :+ newGame
         newGame ! StrMsg("init")
-        newGame
-      case Some(game) =>
-        game
+        Some(newGame)
+      case (None, false) =>
+        None
+      case (Some(game), _) =>
+        Some(game)
     }
   }
 
   def createPlayer(userId: String, out: Channel[JsValue], gameName: String) = {
-    getGame(gameName) ! ("createPlayer", userId, out)
+    getGame(gameName).get ! ("createPlayer", userId, out)
   }
   def killActor(userId:String, gameName: String) {
-    getGame(gameName) ! ("deletePlayer", userId)
+    getGame(gameName).get ! ("deletePlayer", userId)
   }
 
   def cmd(userId: String, userCom: JsValue, gameName: String) : Unit = {
@@ -117,14 +120,16 @@ object Commander {
   }
 
   def cmd(userId: String, userCmd: Message, gameName : String) : Unit = {
-    val game = getGame(gameName)
-    userCmd match {
-      case _:NewDirection =>  game ! userCmd
-      case _:NewPlayer    =>  game ! ("broadcast" , userCmd)
-      case _:Bomb         =>  game ! userCmd
-      case _:Ready        =>  game ! userCmd
-      case _:Destroy      =>  game ! userCmd
-      case _:Death        =>  game ! userCmd
+    val g = getGame(gameName, false)
+    g.foreach { game =>
+      userCmd match {
+        case _:NewDirection =>  game ! userCmd
+        case _:NewPlayer    =>  game ! ("broadcast" , userCmd)
+        case _:Bomb         =>  game ! userCmd
+        case _:Ready        =>  game ! userCmd
+        case _:Destroy      =>  game ! userCmd
+        case _:Death        =>  game ! userCmd
+      }
     }
   }
 

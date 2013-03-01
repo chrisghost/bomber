@@ -54,15 +54,16 @@ var _socket = {
       Crafty.trigger("board", d.c);
     }
     else if(d.kind=="bomb") {
+      console.log("rcv bomb ",d)
       Crafty.trigger("dropBomb"+d.c.userId, d.c);
     } else if(d.kind=="death") {
       humane.log((d.c.userId == pname) ? "You died. Game over." : d.c.userId + " has died");
     }
     else if(d.kind=="gotwinner") {
       humane.log((d.c.winner == pname) ? "You won!" : d.c.winner + " won!");
-    } else if(d.kind=="destroy") {
+    } else if(d.kind=="destroyed") {
+      console.log("rcv destroy ", d);
       Crafty.trigger("destroy", d.c);
-      Crafty.trigger("destroy"+d.c.coord.x+"-"+d.c.coord.y, d.c);
     }
   }
 };
