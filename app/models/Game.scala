@@ -10,10 +10,14 @@ import collection.mutable.MutableList
 class Game extends Actor {
   private var members = Map.empty[String, PlayerInfos]
   private val bomberStyles = List("classic", "punk", "robot", "miner")
-  private var playerPositions : List[(Coord, Option[String])] = List((Coord(30,30), None), (Coord(270,30), None), (Coord(30,270), None), (Coord(270,270), None))
-  private var board : List[Element] = generateBoard(11,11)
+  private var board : List[Element] = List.empty
+  private var geneMap : List[GeneSlot] =
+    (for (a <- 0 until 10; b <- 0 until 10) yield(a,b)).map {
+      case (x,y) => GeneSlot(Coord(x*10, y*10), Coord(x,y), false)
+    }.toList
 
   def receive = {
+    case StrMsg("init") => initBoard
     case m: NewDirection => {
       broadcastBut(m.userId, m)
       (members get m.userId).get.position = m.position
@@ -24,13 +28,6 @@ class Game extends Actor {
         context.stop((members get userId).get.actor)
         members -= userId
         broadcast(DeletePlayer(userId))
-        playerPositions.find(_._2 == Some(userId)) match {
-          case Some(pos) =>
-            playerPositions = playerPositions.filterNot(_ == pos)
-            playerPositions = playerPositions :+ (pos._1, None)
-          case None =>
-            Logger.error("WEIRD You did'nt have position")
-        }
         if(members.isEmpty) {
           terminateGame
         }
@@ -88,44 +85,120 @@ class Game extends Actor {
 
   def createPlayer(userId: String, out: Channel[JsValue]) = {
     if(!members.contains(userId)) {
-      if(members.size < 4) {
 
-        val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
+      val p_actor = context.actorOf(Props(new Player(out)), name="act_"+userId)
 
-        members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, nextPlayerPosition(userId), false, true)))
+      val pPos = if(members.size >= geneMap.count(x => x.gene)) addChunk else Coord(150,150)
 
-        broadcast(NewPlayer(userId, (members get userId).get.style))
-        broadcast(Position(userId, (members get userId).get.position))
-        sendPlayersList(userId)
-        broadcast(getReadyList)
-        sendTo(userId, Board(board.toList))
+      members = members + (userId -> (new PlayerInfos(userId, bomberStyles(Random.nextInt(4)), p_actor, pPos, false, true)))
 
-      }
+
+      broadcast(NewPlayer(userId, (members get userId).get.style))
+      broadcast(Position(userId, (members get userId).get.position))
+      sendPlayersList(userId)
+      broadcast(getReadyList)
+      broadcast(Board(board.toList))
+
     }
   }
 
-  def generateBoard(w:Int, h:Int) = {
-    val xr = 0 until w
-    val yr = 0 until h
+  def initBoard = {
+    println("initializing board")
+    board = generateBoard(0,0,10,10)
+    makeWall(0,0,10,0)
+    makeWall(0,0,0,10)
+    makeWall(0,10,10,10)
+    makeWall(10,0,10,10)
+    geneMap = geneMap.filterNot(x => (x.coord == Coord(0,0))):+GeneSlot(Coord(0,0), Coord(0,0), true)
+  }
+
+  def generateBoard(x:Int, y:Int, w:Int, h:Int) = {
+    val xr = x until x+w
+    val yr = y until y+h
+
+    val centerX = x+Math.floor(w/2);
+    val centerY = y+Math.floor(h/2);
 
     (for (a <- xr; b <- yr) yield(a,b)).map {
       v => v match {
-        case (0,y)            => Element(Coord(0,y), boardElem.WALL) // LEFT WALL
-        case (x,0)            => Element(Coord(x,0), boardElem.WALL) // TOP WALL
-        case (x,y) if(y==h-1) => Element(Coord(x,y), boardElem.WALL) // BOTTOM WALL
-        case (x,y) if(x==w-1) => Element(Coord(x,y), boardElem.WALL) // RIGHT WALL
+        //case (0,y)             => Element(Coord(0,y), boardElem.WALL) // LEFT WALL
+        //case (x,0)            => Element(Coord(x,0), boardElem.WALL) // TOP WALL
+        //case (x,y) if(y==h-1) => Element(Coord(x,y), boardElem.WALL) // BOTTOM WALL
+        //case (x,y) if(x==w-1) => Element(Coord(x,y), boardElem.WALL) // RIGHT WALL
         case (x,y) => (x,y) match {
           case (x,y) if(x%2==0 && y%2==0)
               => Element(Coord(x,y), boardElem.WALL)
-          case (x,y) if(!((x == 1 || x == 2) && (y == 1 || y == 2)) &&      // TOP-LEFT PLAYER SPAWN ZONE
-                        !((x == w-2 || x == w-3) && (y == 1 || y == 2)) &&  // TOP-RIGHT PLAYER SPAWN ZONE
-                        !((x == 1 || x == 2) && (y == h-2 || y == h-3)) &&  // BOTTOM-LEFT PLAYER SPAWN ZONE
-                        !((x == w-2 || x == w-3) && (y == h-2 || y == h-3)) // BOTTOM-RIGHT PLAYER SPAWN ZONE
-                        ) => Element(Coord(x,y), genCrate)
+          //case (x,y) if(!((x == 1 || x == 2) && (y == 1 || y == 2)) &&      // TOP-LEFT PLAYER SPAWN ZONE
+                        //!((x == w-2 || x == w-3) && (y == 1 || y == 2)) &&  // TOP-RIGHT PLAYER SPAWN ZONE
+                        //!((x == 1 || x == 2) && (y == h-2 || y == h-3)) &&  // BOTTOM-LEFT PLAYER SPAWN ZONE
+                        //!((x == w-2 || x == w-3) && (y == h-2 || y == h-3)) // BOTTOM-RIGHT PLAYER SPAWN ZONE
+                        //) => Element(Coord(x,y), genCrate)
+          case (x,y) if(!(x >= centerX-1 && x <= centerX+1 &&
+                          y >= centerY-1 && y <= centerY+1)) =>
+                        Element(Coord(x,y), genCrate)
           case _ => Element(Coord(x,y), boardElem.GROUND)
         }
       }
     }.toList
+  }
+
+  def addChunk:Coord = {
+    val geneP = geneMap.find(x => !x.gene).get
+    //println("GENERATING................",geneP)
+    board = board ::: generateBoard(geneP.coord.x, geneP.coord.y, 11, 11)
+
+    geneMap = geneMap.filterNot(x => (x.coord == geneP.coord)):+GeneSlot(geneP.coord, geneP.gCoord, true)
+
+    geneMap.find(el => el.gCoord.x == geneP.gCoord.x-1 && el.gCoord.y == geneP.gCoord.y).map {
+      case el : GeneSlot => if(!el.gene) makeWall(geneP.coord.x, geneP.coord.y,geneP.coord.x,geneP.coord.y+10)
+    }
+
+
+    val left = geneMap.find(el => el.gCoord.x == geneP.gCoord.x-1 && el.gCoord.y == geneP.gCoord.y).map(_.gene).getOrElse(false) 
+    val right = geneMap.find(el => el.gCoord.x == geneP.gCoord.x+1 && el.gCoord.y == geneP.gCoord.y).map(_.gene).getOrElse(false)
+
+    val up = geneMap.find(el => el.gCoord.x == geneP.gCoord.x && el.gCoord.y == geneP.gCoord.y-1).map(_.gene).getOrElse(false)
+
+    val down = geneMap.find(el => el.gCoord.x == geneP.gCoord.x && el.gCoord.y == geneP.gCoord.y+1).map(_.gene).getOrElse(false)
+
+
+    if (!left) makeWall(geneP.coord.x, geneP.coord.y,geneP.coord.x,geneP.coord.y+10)
+
+    if(!right) makeWall(geneP.coord.x+10, geneP.coord.y,geneP.coord.x+10,geneP.coord.y+10)
+
+    if(!up) makeWall(geneP.coord.x, geneP.coord.y,geneP.coord.x+10,geneP.coord.y)
+
+    if(!down) makeWall(geneP.coord.x, geneP.coord.y+10,geneP.coord.x+10,geneP.coord.y+10)
+
+    Coord((geneP.coord.x+5)*30, (geneP.coord.y+5)*30)
+
+  }
+
+
+  def makeWall(x:Int,y:Int,toX:Int,toY:Int) {
+    val xr = x until toX+1
+    val yr = y until toY+1
+
+    //println("MakeWall",xr,yr)
+
+    (for (a <- xr; b <- yr) yield(a,b)).map {
+      case (x,y) => {
+        board = board.filterNot(x => (x.coord.x == x && x.coord.y == y)):+Element(Coord(x,y), boardElem.WALL)
+      }
+    }
+  }
+
+  def wallToDotted(x:Int,y:Int,toX:Int,toY:Int) {
+    // From [Wall][Wall][Wall]
+    // To   [Wall][    ][Wall]
+
+    val xr = x until toX+1
+    val yr = y until toY+1
+
+    (for (a <- xr; b <- yr) yield(a,b)).map {
+      case (x,y) if(!(x%2==0 && y%2==0)) => board = board.filterNot(x => (x.coord.x == x && x.coord.y == y)):+Element(Coord(x,y), boardElem.GROUND)
+      case _ =>
+    }
   }
 
   def genCrate = Math.random() match {
@@ -142,21 +215,6 @@ class Game extends Actor {
         (members get receiver).get.actor ! Position(v._2.userId, v._2.position)
       }
     }
-  }
-
-  def nextPlayerPosition(player: String) = {
-    val pos = playerPositions.find(!_._2.isDefined)
-    val returned = pos match {
-      case Some(pos) =>
-        playerPositions = playerPositions.filterNot(_ == pos)
-        val nPos = (pos._1, Some(player))
-        playerPositions = playerPositions :+ nPos
-        nPos
-      case None =>
-        Logger.error("GAME IS FULL")
-        playerPositions(0)
-    }
-    returned._1
   }
 
   def sendTo(userId: String, msg: Message) {
@@ -255,6 +313,7 @@ class Player(out: Channel[JsValue]) extends Actor {
 }
 
 abstract class Message
+case class StrMsg(msg:String) extends Message
 case class NewDirection(userId:String, x:Int, y:Int, position:Coord) extends Message
 case class NewPlayer(userId:String, style:String) extends Message
 case class Position(userId:String, pos:Coord) extends Message
@@ -267,6 +326,7 @@ case class GotWinner(winner: String) extends Message
 case object HowManyPlayer extends Message
 
 case class Coord(x:Int, y:Int)
+case class GeneSlot(coord:Coord, gCoord:Coord, gene:Boolean)
 case class Element(coord:Coord, kind:Int)
 case class Board(elements:List[Element]) extends Message
 

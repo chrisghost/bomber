@@ -1,6 +1,6 @@
 $(function(){
   var Bomber = null;
-  Crafty.init(Config.GAME_W, Config.GAME_H);
+  Crafty.init();//Config.GAME_W, Config.GAME_H);
 
   //TODO AN ACTUAL LOADING SCENE
   //TODO LOAD THE SPRITES DURING LOADING SCENE
@@ -18,10 +18,10 @@ $(function(){
   Crafty.sprite(30, "/assets/images/bomber-miner.png", { minersprite: [0, 0]});
   Crafty.sprite(30, "/assets/images/bomber-white-robot.png", { robotsprite: [0, 0]});
 
-  Crafty.sprite(30, "/assets/images/grass.png", { grasssprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/bois.png", { cratesprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/wall.png", { wallsprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/bomb.png", { bombsprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/grass.png", { grasssprite: [0,0]});
+  Crafty.sprite(30, "/assets/images/bois.png", { cratesprite: [0,0]});
+  Crafty.sprite(30, "/assets/images/wall.png", { wallsprite: [0,0]});
+  Crafty.sprite(30, "/assets/images/bomb.png", { bombsprite: [0,0]});
   Crafty.sprite(30, "/assets/images/flammes.png", {
     flamesprite: [0,0],
     flame4sprite: [2,2],
@@ -33,11 +33,11 @@ $(function(){
     flamesprite_right: [4,2],
     flamesprite_up: [2,1],
     flamesprite_down: [2,1]
-  })
+  });
 
-  Crafty.sprite(30, "/assets/images/bombe-bonus.png", { b_bombsprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/speed-bonus.png", { b_speedsprite: [0,0]})
-  Crafty.sprite(30, "/assets/images/feu-bonus.png", { b_flamesprite: [0,0]})
+  Crafty.sprite(30, "/assets/images/bombe-bonus.png", { b_bombsprite: [0,0]});
+  Crafty.sprite(30, "/assets/images/speed-bonus.png", { b_speedsprite: [0,0]});
+  Crafty.sprite(30, "/assets/images/feu-bonus.png", { b_flamesprite: [0,0]});
 
   Crafty.c("World", {
     init: function() {
@@ -110,7 +110,7 @@ $(function(){
 
       this.board[elem.coord.x][elem.coord.y] = cElem;
     },
-    drawNewPlayer: function(info){
+    drawNewPlayer: function(info) {
       var new_player =
         Crafty.e("Bomberman ,"+(info.userId==pname ? "Human":"Distant")
             +", 2D, Canvas, Collision, "
@@ -136,6 +136,9 @@ $(function(){
             this.y = dir.position.y;
           }
       ).bind('Moved', function(from) {
+
+        this.updateViewPort();
+
         var changed=false;
         if (this.hit('wall') || this.hit('crate')) {
           this.attr({x: from.x, y:from.y});
@@ -179,6 +182,7 @@ $(function(){
           function(pos){
             this.x = pos.x;
             this.y = pos.y;
+            if(this.human) this.updateViewPort();
           }
       ).bind("deletePlayer"+info.userId,
           function() {

@@ -1,5 +1,5 @@
 var Config = {
-  "GAME_W" : 330,
+  "GAME_W" : 630,
   "GAME_H" : 330,
   "HUMAN_SPEED" : 3,
   "BLOCK_SIZE" : 30,

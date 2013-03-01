@@ -114,6 +114,10 @@ $(function(){
       },
       incrementFlame: function() {
         this.flameSize += 1;
+      },
+      updateViewPort: function() {
+        Crafty.viewport.x = -this.x-this.w/2+Crafty.viewport.width/2;
+        Crafty.viewport.y = -this.y-this.h+Crafty.viewport.height/2;
       }
 
   });

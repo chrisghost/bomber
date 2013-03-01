@@ -72,6 +72,7 @@ object Commander {
       case None =>
         val newGame = system.actorOf(Props[Game], name = gameName)
         games = games :+ newGame
+        newGame ! StrMsg("init")
         newGame
       case Some(game) =>
         game
